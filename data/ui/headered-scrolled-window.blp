@@ -11,7 +11,12 @@ template $CassetteHeaderedScrolledWindow: Adw.Bin {
       Adw.Bin header_bin {}
     }
 
-    ScrolledWindow real_scrolled_window {}
+    ScrolledWindow real_scrolled_window {
+      hexpand: true;
+      vexpand: true;
+      hscrollbar-policy: never;
+      propagate-natural-height: true;
+    }
   }
 }
 

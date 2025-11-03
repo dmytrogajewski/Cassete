@@ -19,7 +19,7 @@ public class Cassette.MainView : BaseView {
     [GtkChild]
     unowned Gtk.Button playlists_view_button;
     [GtkChild]
-    unowned Gtk.Button liked_tracks_button;
+    unowned Gtk.Button collection_button;
 
     public MainView () {
         Object ();
@@ -40,11 +40,9 @@ public class Cassette.MainView : BaseView {
                 }
             });
 
-            liked_tracks_button.clicked.connect (() => {
+            collection_button.clicked.connect (() => {
                 if (root_view != null) {
-                    // Navigate to the liked playlist by opening PlaylistsView
-                    // The liked playlist micro is in PlaylistsView
-                    root_view.add_view (new PlaylistsView ());
+                    root_view.add_view (new CollectionView ());
                 }
             });
     }

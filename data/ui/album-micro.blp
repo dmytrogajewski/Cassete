@@ -1,0 +1,50 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteAlbumMicro : Adw.Bin {
+  hexpand: false;
+  vexpand: false;
+
+  Adw.Clamp {
+    maximum-size: 220;
+
+    Button self {
+      has-frame: false;
+
+      Box {
+        spacing: 8;
+        orientation: vertical;
+
+        $CassetteCoverImage cover_image {
+          cover-size: big;
+          image-widget-size: 200;
+        }
+
+        Box {
+          orientation: vertical;
+          spacing: 4;
+          hexpand: true;
+
+          Label album_title {
+            label: _("Album");
+            justify: center;
+            halign: center;
+            wrap: true;
+            wrap-mode: word_char;
+            css-classes: ["heading"];
+          }
+
+          Label album_artist {
+            label: _("Artist");
+            justify: center;
+            halign: center;
+            wrap: true;
+            wrap-mode: word_char;
+            css-classes: ["caption", "dim-label"];
+          }
+        }
+      }
+    }
+  }
+}
+

@@ -88,11 +88,15 @@ public sealed class Cassette.Application : Adw.Application {
         typeof (Cassette.StationsView).ensure ();
         typeof (Cassette.AlbumView).ensure ();
         typeof (Cassette.DevelView).ensure ();
-        typeof (Cassette.SearchView).ensure ();
-        typeof (Cassette.PlayMark).ensure ();
-        typeof (Cassette.PlayMarkGlobal).ensure ();
-        typeof (Cassette.PlayMarkTrack).ensure ();
-        typeof (Cassette.VolumeButton).ensure ();
+            typeof (Cassette.SearchView).ensure ();
+            typeof (Cassette.CollectionView).ensure ();
+            typeof (Cassette.PlayMark).ensure ();
+            typeof (Cassette.PlayMarkGlobal).ensure ();
+            typeof (Cassette.PlayMarkTrack).ensure ();
+            typeof (Cassette.VolumeButton).ensure ();
+            typeof (Cassette.PlaylistMicro).ensure ();
+            typeof (Cassette.AlbumMicro).ensure ();
+            typeof (Cassette.LikedPlaylistMicro).ensure ();
     }
 
     construct {

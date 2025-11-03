@@ -1,0 +1,57 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteCollectionView: $CassetteBaseView {
+  $CassetteHeaderedScrolledWindow scrolled_window {
+    header-widget: Adw.Clamp {
+      maximum-size: 1720;
+      margin-start: 12;
+      margin-end: 12;
+      margin-top: 12;
+      margin-bottom: 24;
+
+      Box {
+        orientation: vertical;
+        spacing: 8;
+
+        Box {
+          orientation: horizontal;
+          spacing: 12;
+          margin-bottom: 8;
+
+          Button back_button {
+            css-classes: ["flat"];
+            icon-name: "go-previous-symbolic";
+            tooltip-text: _("Go back");
+            halign: start;
+            valign: center;
+          }
+
+          Label {
+            styles [
+              "title-1"
+            ]
+            hexpand: true;
+            halign: start;
+
+            label: _("Collection");
+          }
+        }
+      }
+    };
+
+    body-widget: Adw.Clamp {
+      maximum-size: 1720;
+      margin-top: 12;
+      margin-bottom: 12;
+      margin-start: 12;
+      margin-end: 12;
+
+      Box main_box {
+        orientation: vertical;
+        spacing: 24;
+        hexpand: true;
+      }
+    };
+  }
+}

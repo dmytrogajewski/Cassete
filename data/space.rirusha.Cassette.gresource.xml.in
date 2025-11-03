@@ -180,6 +180,9 @@
     <file preprocess="xml-stripblanks">ui/disliked-tracks-view.ui</file>
     <file preprocess="xml-stripblanks">ui/devel-view.ui</file>
     <file preprocess="xml-stripblanks">ui/search-view.ui</file>
+    <file preprocess="xml-stripblanks">ui/collection-view.ui</file>
+    <file preprocess="xml-stripblanks">ui/album-micro.ui</file>
+    <file preprocess="xml-stripblanks">ui/liked-playlist-micro.ui</file>
     <file preprocess="xml-stripblanks">ui/account-info-dialog.ui</file>
     <file preprocess="xml-stripblanks">ui/no-plus-dialog.ui</file>
     <file preprocess="xml-stripblanks">ui/begin-view.ui</file>
