@@ -52,6 +52,21 @@ public sealed class Cassette.Application : Adw.Application {
     public static Tape.Settings tape_settings;
     public static Tape.Client tape_client;
 
+    public ApplicationState application_state {
+        get {
+            return (ApplicationState) app_settings.get_enum ("application-state");
+        }
+        set {
+            var old_state = application_state;
+            if (old_state != value) {
+                app_settings.set_enum ("application-state", value);
+                application_state_changed (value, old_state);
+            }
+        }
+    }
+
+    public signal void application_state_changed (ApplicationState new_state, ApplicationState old_state);
+
     public Application () {
         Object (
             application_id: Config.APP_ID_RELEVANT,
@@ -71,6 +86,7 @@ public sealed class Cassette.Application : Adw.Application {
         typeof (Cassette.BaseView).ensure ();
         typeof (Cassette.MainView).ensure ();
         typeof (Cassette.StationsView).ensure ();
+        typeof (Cassette.AlbumView).ensure ();
         typeof (Cassette.DevelView).ensure ();
         typeof (Cassette.PlayMark).ensure ();
         typeof (Cassette.PlayMarkGlobal).ensure ();
@@ -120,6 +136,10 @@ public sealed class Cassette.Application : Adw.Application {
         client_settings.bind ("can-cache", tape_settings, "can-cache", DEFAULT);
 
         tape_client = new Tape.Client (tape_settings);
+
+        // Initialize application state from settings
+        // The state will be updated based on authentication and network status
+        application_state = (ApplicationState) app_settings.get_enum ("application-state");
     }
 
     public override void activate () {
@@ -287,8 +307,13 @@ public sealed class Cassette.Application : Adw.Application {
                 }
             }
         } else if (parts[0] == "album") {
-            // TODO: Implement album view
-            window.show_message (_("Albums view not implemented yet"));
+            if (parts.length < 2) {
+                return;
+            }
+            string album_id = parts[1];
+            if (window.current_view != null) {
+                window.current_view.add_view (new AlbumView (album_id));
+            }
         }
     }
 

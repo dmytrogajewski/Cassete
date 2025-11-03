@@ -96,56 +96,57 @@ namespace Cassette {
                 }
             });
 
-            // TODO: Connect to application state changes when available
-            // application.application_state_changed.connect (application_state_changed);
+            var app = (Application?) GLib.Application.get_default () as Application;
+            if (app != null) {
+                app.application_state_changed.connect (application_state_changed);
+            }
         }
 
         public void init_content (string content_id) {
             this.content_id = content_id;
             check_liked ();
 
-            // TODO: application_state_changed (application.application_state, application.application_state);
+            var app = (Application?) GLib.Application.get_default () as Application;
+            if (app != null) {
+                application_state_changed (app.application_state, app.application_state);
+            }
         }
 
         void check_liked () {
             if (content_id != null) {
-                // TODO: Fix when HashModel properties are exposed in VAPI
-                // var likes_handler = Application.tape_client.yam_helper.likes_handler;
-                // For now, assume not liked - this will be updated when VAPI is regenerated
-                // switch (object_content_type) {
-                //     case Tape.ContentType.TRACK:
-                //         is_liked = likes_handler.liked_tracks.contains (content_id);
-                //         break;
-                //     case Tape.ContentType.PLAYLIST:
-                //         is_liked = likes_handler.liked_playlists.contains (content_id);
-                //         break;
-                //     case Tape.ContentType.ALBUM:
-                //         is_liked = likes_handler.liked_albums.contains (content_id);
-                //         break;
-                //     default:
-                //         is_liked = false;
-                //         break;
-                // }
-                is_liked = false;
+                var likes_handler = Application.tape_client.yam_helper.likes_handler;
+                switch (object_content_type) {
+                    case Tape.ContentType.TRACK:
+                        is_liked = likes_handler.is_track_liked (content_id);
+                        break;
+                    case Tape.ContentType.PLAYLIST:
+                        is_liked = likes_handler.is_playlist_liked (content_id);
+                        break;
+                    case Tape.ContentType.ALBUM:
+                        is_liked = likes_handler.is_album_liked (content_id);
+                        break;
+                    default:
+                        is_liked = false;
+                        break;
+                }
             }
         }
 
-        // TODO: Connect to application state changes when available
-        // void application_state_changed (ApplicationState new_state, ApplicationState old_state) {
-        //     switch (new_state) {
-        //         case ApplicationState.ONLINE:
-        //             real_button.sensitive = true;
-        //             check_liked ();
-        //             break;
+        void application_state_changed (ApplicationState new_state, ApplicationState old_state) {
+            switch (new_state) {
+                case ApplicationState.ONLINE:
+                    real_button.sensitive = true;
+                    check_liked ();
+                    break;
 
-        //         case ApplicationState.OFFLINE:
-        //             real_button.sensitive = false;
-        //             break;
+                case ApplicationState.OFFLINE:
+                    real_button.sensitive = false;
+                    break;
 
-        //         default:
-        //             break;
-        //     }
-        // }
+                default:
+                    break;
+            }
+        }
 
         public void liked_start_change (string track_id) {
             if (content_id == null) {
@@ -172,15 +173,17 @@ namespace Cassette {
 
             real_button.sensitive = false;
 
-            // TODO: Implement when API methods are available
-            //  var yam_helper = Application.tape_client.yam_helper;
-            //  if (is_liked) {
-            //      yield yam_helper.unlike (object_content_type, content_id);
-            //  } else {
-            //      yield yam_helper.like (object_content_type, content_id);
-            //  }
-
-            real_button.sensitive = true;
+            var yam_helper = Application.tape_client.yam_helper;
+            try {
+                if (is_liked) {
+                    yield yam_helper.unlike (object_content_type, content_id);
+                } else {
+                    yield yam_helper.like (object_content_type, content_id);
+                }
+            } catch (Error e) {
+                warning ("Failed to like/unlike: %s", e.message);
+                real_button.sensitive = true;
+            }
         }
     }
 }

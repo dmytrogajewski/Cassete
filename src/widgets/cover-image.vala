@@ -78,15 +78,17 @@ public sealed class Cassette.CoverImage : Gtk.Frame {
 
         Gdk.Pixbuf? pixbuf_buffer = null;
 
-        // TODO: Fix when get_image API is available
-        // var image_bytes = yield Application.tape_client.cachier.get_image (yam_object, (int) cover_size);
-        // if (image_bytes != null) {
-        //     try {
-        //         pixbuf_buffer = new Gdk.Pixbuf.from_bytes (image_bytes);
-        //     } catch (Error e) {
-        //         // Handle error
-        //     }
-        // }
+        var image_bytes = yield Application.tape_client.cachier.get_image (yam_object, (int) cover_size);
+        if (image_bytes != null) {
+            try {
+                var loader = new Gdk.PixbufLoader ();
+                loader.write_bytes (image_bytes);
+                loader.close ();
+                pixbuf_buffer = loader.get_pixbuf ();
+            } catch (Error e) {
+                warning ("Failed to create pixbuf from image bytes: %s", e.message);
+            }
+        }
 
         if (pixbuf_buffer != null) {
             var real_image = new Gtk.Image ();

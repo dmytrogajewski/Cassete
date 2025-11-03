@@ -16,19 +16,25 @@ template $CassetteSidebar: $CassetteShrinkableBin {
 
     [sidebar]
     Adw.ToolbarView toolbar_view {
-      top-bar-style: flat;
+      reveal-top-bars: true;
 
       [top]
       Adw.HeaderBar headerbar {
-        Button close_button {
-          icon-name: "go-next-symbolic";
-          action-name: "win.close-sidebar";
-        }
+        css-classes: ["flat"];
+        show-end-title-buttons: false;
+        show-start-title-buttons: false;
+        decoration-layout: "";
+        margin-top: 0;
+        margin-bottom: 0;
+        margin-start: 0;
+        margin-end: 0;
 
+        [start]
         $CassetteCacheIndicator cache_indicator {}
 
         title-widget: Adw.WindowTitle window_title {};
 
+        [end]
         $CassettePrimaryMenuButton menu_button {}
       }
     }

@@ -25,7 +25,7 @@ namespace Cassette {
                 }
                 rows.clear ();
 
-                // TODO: Implement when custom pages are supported in new PageRoot architecture
+                //
                 // var app = (Application?) GLib.Application.get_default ();
                 // var window = app?.active_window as Window;
                 // if (window != null && window.page_root.custom_pages != null) {

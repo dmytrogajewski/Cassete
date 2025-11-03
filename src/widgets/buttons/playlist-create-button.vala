@@ -22,14 +22,45 @@ public class Cassette.PlaylistCreateButton : Adw.Bin {
 
     construct {
         real_button.clicked.connect (create_playlist_button_clicked_async);
-        // TODO: Connect to application state changes when available
+        var app = (Application?) GLib.Application.get_default () as Application;
+        if (app != null) {
+            app.application_state_changed.connect (application_state_changed);
+            application_state_changed (app.application_state, app.application_state);
+        }
+    }
+
+    void application_state_changed (ApplicationState new_state, ApplicationState old_state) {
+        switch (new_state) {
+            case ApplicationState.ONLINE:
+                sensitive = true;
+                break;
+
+            case ApplicationState.OFFLINE:
+                sensitive = false;
+                break;
+
+            default:
+                break;
+        }
     }
 
     async void create_playlist_button_clicked_async () {
         sensitive = false;
 
-        // TODO: Implement when create_playlist is available in API
-        // yield Application.tape_client.yam_helper.create_playlist ();
+        try {
+            var yam_helper = Application.tape_client.yam_helper;
+            var new_playlist = yield yam_helper.create_playlist ();
+            if (new_playlist != null) {
+                var app = (Application?) GLib.Application.get_default ();
+                var window = app?.active_window as Window;
+                window?.show_message (_("Playlist '%s' created").printf (new_playlist.title));
+            }
+        } catch (Error e) {
+            warning ("Failed to create playlist: %s", e.message);
+            var app = (Application?) GLib.Application.get_default ();
+            var window = app?.active_window as Window;
+            window?.show_message (_("Failed to create playlist: %s").printf (e.message));
+        }
         
         sensitive = true;
     }

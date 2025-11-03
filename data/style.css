@@ -166,3 +166,19 @@ track-row.playing-active {
 .station-card-playing-active {
     background-color: alpha(@accent_bg_color, 0.54);
 }
+
+/* Sidebar headerbar tweaks */
+headerbar.flat {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+/* Window headerbar - ensure it's visible and stretches to top */
+toolbarview headerbar.flat {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}

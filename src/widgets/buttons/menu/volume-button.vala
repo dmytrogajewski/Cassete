@@ -179,7 +179,7 @@ public class Cassette.VolumeButton : CustomMenuButton {
         var equalaizer_box = new Gtk.Box (mirror_orientation (orientation), 8);
         equalaizer_revealer.child = equalaizer_box;
 
-        // TODO: Migrate Equalaizer widget when available
+        //
         // equalaizer_box.append (new Equalaizer ());
 
         var separator = new Gtk.Separator (orientation);

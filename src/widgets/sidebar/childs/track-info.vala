@@ -81,25 +81,24 @@ public class Cassette.TrackInfo : SidebarChildBin {
         YaMAPI.SimilarTracks? similar_tracks = null;
         YaMAPI.Lyrics? lyrics = null;
 
-        // TODO: Uncomment when API methods are available in libtape
-        // var yam_helper = Application.tape_client.yam_helper;
-        // try {
-        //     similar_tracks = yield yam_helper.get_track_similar (track_info.id);
-        // } catch (Error e) {
-        //     debug ("Failed to load similar tracks: %s", e.message);
-        // }
+        var yam_helper = Application.tape_client.yam_helper;
+        try {
+            similar_tracks = yield yam_helper.get_track_similar (track_info.id);
+        } catch (Error e) {
+            debug ("Failed to load similar tracks: %s", e.message);
+        }
 
-        // if (track_info.lyrics_info != null) {
-        //     try {
-        //         if (track_info.lyrics_info.has_available_sync_lyrics) {
-        //             lyrics = yield yam_helper.get_lyrics (track_info.id, true);
-        //         } else if (track_info.lyrics_info.has_available_text_lyrics) {
-        //             lyrics = yield yam_helper.get_lyrics (track_info.id, false);
-        //         }
-        //     } catch (Error e) {
-        //         debug ("Failed to load lyrics: %s", e.message);
-        //     }
-        // }
+        if (track_info.lyrics_info != null) {
+            try {
+                if (track_info.lyrics_info.has_available_sync_lyrics) {
+                    lyrics = yield yam_helper.get_lyrics (track_info.id, true);
+                } else if (track_info.lyrics_info.has_available_text_lyrics) {
+                    lyrics = yield yam_helper.get_lyrics (track_info.id, false);
+                }
+            } catch (Error e) {
+                debug ("Failed to load lyrics: %s", e.message);
+            }
+        }
 
         set_values (similar_tracks, lyrics);
     }

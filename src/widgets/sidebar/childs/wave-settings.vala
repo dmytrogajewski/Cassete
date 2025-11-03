@@ -35,23 +35,20 @@ public sealed class Cassette.WaveSettings: SidebarChildBin {
     }
 
     async void fetch_wave_settings () {
-        // TODO: Uncomment when API method is available in libtape
-        // var yam_helper = Application.tape_client.yam_helper;
-        // TODO: Uncomment when API method is available in libtape
-        // try {
-        //     wave_settings = yield yam_helper.get_wave_settings ();
-        //
-        //     if (wave_settings != null) {
-        //         loadable_widget.show_result ();
-        //         set_values ();
-        //     } else {
-        //         loadable_widget.show_error ();
-        //     }
-        // } catch (Error e) {
-        //     debug ("Failed to load wave settings: %s", e.message);
-        //     loadable_widget.show_error ();
-        // }
-        loadable_widget.show_error ();
+        var yam_helper = Application.tape_client.yam_helper;
+        try {
+            wave_settings = yield yam_helper.get_wave_settings ();
+
+            if (wave_settings != null) {
+                loadable_widget.show_result ();
+                set_values ();
+            } else {
+                loadable_widget.show_error ();
+            }
+        } catch (Error e) {
+            debug ("Failed to load wave settings: %s", e.message);
+            loadable_widget.show_error ();
+        }
     }
 
     void set_values () {

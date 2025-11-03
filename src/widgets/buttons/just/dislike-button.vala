@@ -62,47 +62,49 @@ namespace Cassette {
                 }
             });
 
-            // TODO: Connect to application state changes when available
-            // application.application_state_changed.connect (application_state_changed);
+            var app = (Application?) GLib.Application.get_default () as Application;
+            if (app != null) {
+                app.application_state_changed.connect (application_state_changed);
+            }
         }
 
         public void init_content (string content_id) {
             this.content_id = content_id;
             check_disliked ();
 
-            // TODO: application_state_changed (application.application_state, application.application_state);
+            var app = (Application?) GLib.Application.get_default () as Application;
+            if (app != null) {
+                application_state_changed (app.application_state, app.application_state);
+            }
         }
 
         void check_disliked () {
             if (content_id != null) {
-                // TODO: Fix when HashModel properties are exposed in VAPI
-                // var likes_handler = Application.tape_client.yam_helper.likes_handler;
+                var likes_handler = Application.tape_client.yam_helper.likes_handler;
                 // Only tracks can be disliked in current API
-                // if (object_content_type == Tape.ContentType.TRACK) {
-                //     is_disliked = likes_handler.disliked_tracks.contains (content_id);
-                // } else {
-                //     is_disliked = false;
-                // }
-                is_disliked = false;
+                if (object_content_type == Tape.ContentType.TRACK) {
+                    is_disliked = likes_handler.is_track_disliked (content_id);
+                } else {
+                    is_disliked = false;
+                }
             }
         }
 
-        // TODO: Connect to application state changes when available
-        // void application_state_changed (ApplicationState new_state, ApplicationState old_state) {
-        //     switch (new_state) {
-        //         case ApplicationState.ONLINE:
-        //             real_button.sensitive = true;
-        //             check_disliked ();
-        //             break;
+        void application_state_changed (ApplicationState new_state, ApplicationState old_state) {
+            switch (new_state) {
+                case ApplicationState.ONLINE:
+                    real_button.sensitive = true;
+                    check_disliked ();
+                    break;
 
-        //         case ApplicationState.OFFLINE:
-        //             real_button.sensitive = false;
-        //             break;
+                case ApplicationState.OFFLINE:
+                    real_button.sensitive = false;
+                    break;
 
-        //         default:
-        //             break;
-        //     }
-        // }
+                default:
+                    break;
+            }
+        }
 
         public void disliked_start_change (string track_id) {
             if (content_id == null) {
@@ -134,15 +136,17 @@ namespace Cassette {
 
             real_button.sensitive = false;
 
-            // TODO: Implement when API methods are available
-            //  var yam_helper = Application.tape_client.yam_helper;
-            //  if (is_disliked) {
-            //      yield yam_helper.undislike (object_content_type, content_id);
-            //  } else {
-            //      yield yam_helper.dislike (object_content_type, content_id);
-            //  }
-
-            real_button.sensitive = true;
+            var yam_helper = Application.tape_client.yam_helper;
+            try {
+                if (is_disliked) {
+                    yield yam_helper.undislike (object_content_type, content_id);
+                } else {
+                    yield yam_helper.dislike (object_content_type, content_id);
+                }
+            } catch (Error e) {
+                warning ("Failed to dislike/undislike: %s", e.message);
+                real_button.sensitive = true;
+            }
         }
     }
 }

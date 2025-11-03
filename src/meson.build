@@ -70,6 +70,7 @@ vala_sources = files(
   'widgets/views/abstract-with-tracks.vala',
   'widgets/views/abstract-cachiable.vala',
   'widgets/views/playlist.vala',
+  'widgets/views/album.vala',
   'widgets/views/stations.vala',
   'widgets/views/disliked.vala',
   'widgets/views/devel.vala',

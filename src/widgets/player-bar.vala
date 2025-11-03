@@ -44,6 +44,8 @@ public class Cassette.PlayerBar : Adw.Bin {
         unowned Gtk.Button fullscreen_button;
         [GtkChild]
         unowned TrackOptionsButton track_options_button;
+        [GtkChild]
+        unowned VolumeButton volume_button;
 
         public Window window { get; construct set; }
 

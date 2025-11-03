@@ -69,11 +69,15 @@ public class Cassette.ActionCardStation : ActionCardCustom {
                     content_label.remove_css_class ("title-2");
                     content_label.add_css_class ("title-4");
                 }
+                // Make icon smaller for horizontal (shrinked) layout
+                content_image.icon_size = Gtk.IconSize.NORMAL;
             } else {
                 if (!content_label.has_css_class ("title-2")) {
                     content_label.add_css_class ("title-2");
                     content_label.remove_css_class ("title-4");
                 }
+                // Keep icon large for vertical layout
+                content_image.icon_size = Gtk.IconSize.LARGE;
             }
         }
     }

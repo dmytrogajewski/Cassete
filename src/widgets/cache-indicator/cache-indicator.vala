@@ -68,7 +68,7 @@ public class Cassette.CacheIndicator : Adw.Bin {
             // });
         }
 
-        // TODO: Implement when cachier job API is available
+        //
         // void update_indicator_visibility () {
         //     // Note: Jober.job_list will be available when cachier.jober is uncommented
         //     // When available, check like this:
@@ -80,7 +80,7 @@ public class Cassette.CacheIndicator : Adw.Bin {
         // }
 
         void fill_box () {
-            // TODO: Fill with job info when cachier is available
+            //
             // foreach (var job in cachier.job_list) {
             //     jobs_box.append (new JobInfoBadge (job));
             // }
@@ -97,7 +97,7 @@ public class Cassette.CacheIndicator : Adw.Bin {
             var background = foreground;
             background.alpha *= 0.3f;
 
-            // TODO: Calculate progress from cachier jobs when available
+            //
             // foreach (var job in cachier.job_list) {
             //     elapsed_progress += job.saved_tracks_count;
             //     total_progress += job.total_tracks_count;

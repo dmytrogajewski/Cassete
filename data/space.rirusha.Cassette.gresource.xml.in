@@ -175,6 +175,7 @@
     <file preprocess="xml-stripblanks">ui/custom-page-preferences.ui</file>
     <file preprocess="xml-stripblanks">ui/custom-pages-preferences.ui</file>
     <file preprocess="xml-stripblanks">ui/playlist-view.ui</file>
+    <file preprocess="xml-stripblanks">ui/album-view.ui</file>
     <file preprocess="xml-stripblanks">ui/stations-view.ui</file>
     <file preprocess="xml-stripblanks">ui/disliked-tracks-view.ui</file>
     <file preprocess="xml-stripblanks">ui/devel-view.ui</file>

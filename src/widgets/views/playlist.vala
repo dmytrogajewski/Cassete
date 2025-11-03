@@ -94,7 +94,7 @@ namespace Cassette {
                                     if (root_view != null) {
                                         root_view.backward ();
                                     }
-                                    // TODO: Implement custom page removal when PageRoot supports it
+                                    //
                                     // var app = (Application?) GLib.Application.get_default ();
                                     // var window = app?.active_window as Window;
                                     // window?.page_root.remove_page (object_info.oid);
@@ -134,7 +134,7 @@ namespace Cassette {
                 add_page_button.visible = true;
                 add_page_button.clicked.connect (() => {
                     var playlist_info = object_info as YaMAPI.Playlist;
-                    // TODO: Implement custom page addition when PageRoot supports it
+                    //
                     // var app = (Application?) GLib.Application.get_default ();
                     // var window = app?.active_window as Window;
                     // if (window != null) {
@@ -163,13 +163,15 @@ namespace Cassette {
         public async bool playlist_delete_async () {
             bool success = false;
 
-            // TODO: Uncomment when API method is available in libtape
-            // var yam_helper = Application.tape_client.yam_helper;
-            // success = yield yam_helper.delete_playlist (kind);
-
-            // if (success) {
-            //     uncache_playlist (false);
-            // }
+            var yam_helper = Application.tape_client.yam_helper;
+            try {
+                success = yield yam_helper.delete_playlist (kind);
+                if (success) {
+                    uncache_playlist (false);
+                }
+            } catch (Error e) {
+                warning ("Failed to delete playlist: %s", e.message);
+            }
 
             return success;
         }
@@ -273,9 +275,12 @@ namespace Cassette {
         async YaMAPI.Playlist? on_switch_change_async (bool is_active) {
             YaMAPI.Playlist? playlist_info = null;
 
-            // TODO: Uncomment when API method is available in libtape
-            // var yam_helper = Application.tape_client.yam_helper;
-            // playlist_info = yield yam_helper.change_playlist_visibility (((YaMAPI.Playlist) object_info).kind, is_active);
+            var yam_helper = Application.tape_client.yam_helper;
+            try {
+                playlist_info = yield yam_helper.change_playlist_visibility (((YaMAPI.Playlist) object_info).kind, is_active);
+            } catch (Error e) {
+                warning ("Failed to change playlist visibility: %s", e.message);
+            }
 
             return playlist_info;
         }

@@ -257,25 +257,24 @@ namespace Cassette {
         }
 
         if (position >= 0) {
-            // TODO: Uncomment when API method is available in libtape
-            // var yam_helper = Application.tape_client.yam_helper;
-            // yam_helper.remove_tracks_from_playlist.begin (
-            //     playlist_info.kind,
-            //     position,
-            //     playlist_info.revision,
-            //     (obj, res) => {
-            //         try {
-            //             yam_helper.remove_tracks_from_playlist.end (res);
-            //         } catch (Error e) {
-            //             var app = (Application?) GLib.Application.get_default ();
-            //             var window = app?.active_window as Window;
-            //             window?.show_message (_("Failed to remove track from playlist: %s").printf (e.message));
-            //         }
-            //     }
-            // );
-            var app = (Application?) GLib.Application.get_default ();
-            var window = app?.active_window as Window;
-            window?.show_message (_("Remove track from playlist - API method not yet available"));
+            var yam_helper = Application.tape_client.yam_helper;
+            yam_helper.remove_tracks_from_playlist.begin (
+                playlist_info.kind,
+                position,
+                playlist_info.revision,
+                (obj, res) => {
+                    try {
+                        yam_helper.remove_tracks_from_playlist.end (res);
+                        var app = (Application?) GLib.Application.get_default ();
+                        var window = app?.active_window as Window;
+                        window?.show_message (_("Track removed from playlist"));
+                    } catch (Error e) {
+                        var app = (Application?) GLib.Application.get_default ();
+                        var window = app?.active_window as Window;
+                        window?.show_message (_("Failed to remove track from playlist: %s").printf (e.message));
+                    }
+                }
+            );
         }
     }
 

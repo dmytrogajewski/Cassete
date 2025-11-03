@@ -8,6 +8,15 @@ template $CassetteWindow : Adw.ApplicationWindow {
   Adw.ToolbarView player_bar_toolbar {
     bottom-bar-style: raised;
     reveal-bottom-bars: false;
+    reveal-top-bars: true;
+
+    [top]
+    Adw.HeaderBar headerbar {
+      show-start-title-buttons: false;
+      margin-top: 0;
+      margin-bottom: 0;
+      css-classes: ["flat"];
+    }
 
     content: $CassetteSidebar sidebar {
       content: Adw.ToastOverlay toast_overlay {

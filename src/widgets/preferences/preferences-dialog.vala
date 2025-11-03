@@ -83,14 +83,9 @@ namespace Cassette {
             Application.app_settings.bind (
                 "show-temp-save-mark", show_temp_save_stack_switch, "active", GLib.SettingsBindFlags.DEFAULT
             );
-            // TODO: Uncomment when is_hq setting is available
-            // Application.client_settings.bind (
-            //     "is-hq", is_hq_switch, "active", GLib.SettingsBindFlags.DEFAULT
-            // );
-            // TODO: Uncomment when debug-mode setting is available
-            // Application.client_settings.bind (
-            //     "debug-mode", debug_mode_switch, "active", GLib.SettingsBindFlags.DEFAULT
-            // );
+            // Note: Music quality is now controlled via music-quality enum setting
+            // (see Application.tape_client.settings.music_quality)
+            // Debug mode is not available as a setting
             Application.app_settings.bind (
                 "use-only-dialogs", use_only_dialogs_switch, "active", GLib.SettingsBindFlags.DEFAULT
             );

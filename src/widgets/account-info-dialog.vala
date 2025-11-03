@@ -39,12 +39,22 @@ namespace Cassette {
         async void load_avatar () {
             avatar.text = account_info.public_name;
             avatar.size = 200;
-            // TODO: Uncomment when image API is available
-            // var cachier = Application.tape_client.cachier;
-            // var pixbuf = yield cachier.get_image (account_info, 200);
-            // if (pixbuf != null) {
-            //     avatar.custom_image = Gdk.Texture.for_pixbuf (pixbuf);
-            // }
+            
+            var cachier = Application.tape_client.cachier;
+            var image_bytes = yield cachier.get_image (account_info, 200);
+            if (image_bytes != null) {
+                try {
+                    var loader = new Gdk.PixbufLoader ();
+                    loader.write_bytes (image_bytes);
+                    loader.close ();
+                    var pixbuf = loader.get_pixbuf ();
+                    if (pixbuf != null) {
+                        avatar.custom_image = Gdk.Texture.for_pixbuf (pixbuf);
+                    }
+                } catch (Error e) {
+                    warning ("Failed to create pixbuf from avatar image: %s", e.message);
+                }
+            }
         }
     }
 }

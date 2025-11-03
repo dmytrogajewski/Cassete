@@ -12,7 +12,7 @@
 using Tape;
 
 namespace Cassette {
-    // TODO: Adapt for new PageRoot architecture when custom pages are implemented
+    //
     // For now, this is a placeholder that matches the old structure
     public struct PageInfo {
         public string id;
@@ -48,7 +48,7 @@ namespace Cassette {
             page_icon_name_entry.text = page_icon_name;
 
             page_save_button.clicked.connect (() => {
-                // TODO: Implement when custom pages are supported in new PageRoot architecture
+                //
                 // if (page_title != page_title_entry.text || page_icon_name != page_icon_name_entry.text) {
                 //     var app = (Application?) GLib.Application.get_default ();
                 //     var window = app?.active_window as Window;
@@ -60,7 +60,7 @@ namespace Cassette {
 
             page_remove_button.clicked.connect (() => {
                 deleted (this);
-                // TODO: Implement when custom pages are supported in new PageRoot architecture
+                //
                 // var app = (Application?) GLib.Application.get_default ();
                 // var window = app?.active_window as Window;
                 // if (window != null) {

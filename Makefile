@@ -76,13 +76,30 @@ uninstall:
 	@echo "Uninstalling Cassette..."
 	@ninja -C $(BUILDDIR) uninstall
 
+# Check for TODO/FIXME comments in source code
+.PHONY: check-todos
+check-todos:
+	@echo "Checking for TODO/FIXME comments in source code..."
+	@TODOS=$$(grep -rn --include="*.vala" --include="*.blp" --include="*.ui" --include="*.c" --include="*.h" \
+		--exclude-dir="$(BUILDDIR)" --exclude-dir=".git" \
+		-E "(\\bTODO\\b|\\bFIXME\\b)" \
+		src/ data/ subprojects/libtape/lib/ subprojects/libapi-base/lib/ 2>/dev/null || true); \
+	if [ -n "$$TODOS" ]; then \
+		echo "ERROR: TODO/FIXME comments found in source code:"; \
+		echo "$$TODOS"; \
+		echo ""; \
+		echo "Please address all TODO/FIXME comments before running tests."; \
+		exit 1; \
+	else \
+		echo "No TODO/FIXME comments found."; \
+	fi
+
 # Run tests (if available)
-# Note: Some dependency tests may fail (e.g., network tests in libapi-base)
-# This is expected and not related to Cassette code
+# Note: Only runs Cassette-specific tests to avoid dependency test failures
 .PHONY: test
-test: build
-	@echo "Running tests..."
-	@meson test -C $(BUILDDIR) --no-rebuild || echo "Some tests failed (dependency tests may fail)"
+test: build check-todos
+	@echo "Running Cassette tests..."
+	@meson test -C $(BUILDDIR) --no-rebuild --suite cassette || (echo "Cassette tests failed!"; exit 1)
 
 # Lint/check code (vala-lint if available)
 .PHONY: check

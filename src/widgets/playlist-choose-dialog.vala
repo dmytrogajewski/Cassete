@@ -43,9 +43,12 @@ namespace Cassette {
         async void load_playlists () {
             Gee.ArrayList<YaMAPI.Playlist>? playlists_info = null;
 
-            // TODO: Uncomment when API method is available in libtape
-            // var yam_helper = Application.tape_client.yam_helper;
-            // playlists_info = yield yam_helper.get_playlist_list (null);
+            var yam_helper = Application.tape_client.yam_helper;
+            try {
+                playlists_info = yield yam_helper.get_playlist_list (null);
+            } catch (Error e) {
+                warning ("Failed to load playlists: %s", e.message);
+            }
 
             set_values (playlists_info);
         }

@@ -97,7 +97,7 @@ namespace Cassette {
         }
 
         protected void start_saving (bool yell_status) {
-            // TODO: Implement when cachier job API is available
+            //
             // download_stack.visible_child_name = "abort";
             // this.yell_status = yell_status;
 
@@ -115,7 +115,7 @@ namespace Cassette {
         }
 
         protected virtual void check_cache () {
-            // TODO: Implement when cachier job API is available
+            //
             // download_stack.sensitive = true;
 
             // var cachier = Application.tape_client.cachier;
@@ -133,7 +133,7 @@ namespace Cassette {
         }
 
         public virtual void abort_saving () {
-            // TODO: Implement when cachier job API is available
+            //
             // if (job != null) {
             //     job.abort ();
             // }
@@ -143,7 +143,7 @@ namespace Cassette {
             download_stack.sensitive = false;
             this.yell_status = yell_status;
 
-            // TODO: Implement when uncache API is available
+            //
             // var cachier = Application.tape_client.cachier;
             // cachier.uncache.begin (object_info, () => {
             //     download_stack.visible_child_name = "save";

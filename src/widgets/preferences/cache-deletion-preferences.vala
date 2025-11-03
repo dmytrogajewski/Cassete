@@ -126,23 +126,34 @@ namespace Cassette {
             loading_win.present ();
 
             if (is_tmp) {
-                // TODO: Uncomment when API method is available in libtape
-                // var storager = Application.tape_client.cachier.storager;
-                // storager.delete_temp_cache.begin (() => {
-                //     loading_win.close ();
-                //     loading_win = null;
-
-                //     update_data ();
-                // });
+                var storager = Application.tape_client.cachier.storager;
+                storager.delete_cache_dir.begin ((obj, res) => {
+                    try {
+                        storager.delete_cache_dir.end (res);
+                        loading_win.close ();
+                        loading_win = null;
+                        update_data ();
+                    } catch (Error e) {
+                        warning ("Failed to delete cache: %s", e.message);
+                        loading_win.close ();
+                        loading_win = null;
+                    }
+                });
             } else {
-                // TODO: Uncomment when API method is available in libtape
-                // var cachier = Application.tape_client.cachier;
-                // cachier.uncache_all.begin (() => {
-                //     loading_win.close ();
-                //     loading_win = null;
-
-                //     update_data ();
-                // });
+                // Move permanent data to cache (clear_user_data with keep_content=true)
+                var storager = Application.tape_client.cachier.storager;
+                storager.clear_user_data.begin (true, true, (obj, res) => {
+                    try {
+                        storager.clear_user_data.end (res);
+                        loading_win.close ();
+                        loading_win = null;
+                        update_data ();
+                    } catch (Error e) {
+                        warning ("Failed to clear permanent data: %s", e.message);
+                        loading_win.close ();
+                        loading_win = null;
+                    }
+                });
             }
         }
     }

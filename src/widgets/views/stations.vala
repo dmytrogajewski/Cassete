@@ -35,6 +35,8 @@ public class Cassette.StationsView : BaseView {
     unowned Gtk.SearchEntry search_entry;
     [GtkChild]
     unowned Gtk.FlowBox search_flow_box;
+    [GtkChild]
+    unowned Gtk.Button back_button;
 
     uint visible_search_childs_n = 0;
 
@@ -56,6 +58,12 @@ public class Cassette.StationsView : BaseView {
 
         search_entry.changed.connect (() => {
             scrolled_window.reveal_header = search_entry.text == "";
+        });
+
+        back_button.clicked.connect (() => {
+            if (root_view != null) {
+                root_view.backward ();
+            }
         });
     }
 

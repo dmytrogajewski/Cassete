@@ -50,12 +50,17 @@ namespace Cassette {
 
             YaMAPI.Playlist? new_playlist = null;
 
-            // TODO: Uncomment when API method is available in libtape
-            // var yam_helper = Application.tape_client.yam_helper;
-            // new_playlist = yield yam_helper.add_track_to_playlist (
-            //     track_info,
-            //     playlist_info
-            // );
+            var yam_helper = Application.tape_client.yam_helper;
+            try {
+                new_playlist = yield yam_helper.add_track_to_playlist (
+                    track_info,
+                    playlist_info
+                );
+            } catch (Error e) {
+                warning ("Failed to add track to playlist: %s", e.message);
+                unsuccess ();
+                return;
+            }
 
             if (new_playlist != null) {
                 playlist_info.track_count = new_playlist.track_count;

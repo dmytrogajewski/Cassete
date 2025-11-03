@@ -14,12 +14,28 @@ template $CassetteStationsView: $CassetteBaseView {
         orientation: vertical;
         spacing: 8;
 
-        Label {
-          styles [
-            "title-1"
-          ]
+        Box {
+          orientation: horizontal;
+          spacing: 12;
+          margin-bottom: 8;
 
-          label: _("Stations dashboard");
+          Button back_button {
+            css-classes: ["flat"];
+            icon-name: "go-previous-symbolic";
+            tooltip-text: _("Go back");
+            halign: start;
+            valign: center;
+          }
+
+          Label {
+            styles [
+              "title-1"
+            ]
+            hexpand: true;
+            halign: start;
+
+            label: _("Stations dashboard");
+          }
         }
 
         FlowBox dashboard_flow_box {
