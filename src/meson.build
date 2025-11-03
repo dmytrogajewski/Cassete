@@ -74,6 +74,7 @@ vala_sources = files(
   'widgets/views/stations.vala',
   'widgets/views/disliked.vala',
   'widgets/views/devel.vala',
+  'widgets/views/search.vala',
   'widgets/account-info-dialog.vala',
   'widgets/no-plus-dialog.vala',
   'widgets/begin/begin-dialog.vala',

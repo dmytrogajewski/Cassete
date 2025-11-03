@@ -1,0 +1,44 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteSearchView: $CassetteBaseView {
+  Box {
+    orientation: vertical;
+
+    ScrolledWindow scrolled_window {
+      hexpand: true;
+      vexpand: true;
+      propagate-natural-height: true;
+      hscrollbar-policy: never;
+
+      Adw.Clamp {
+        maximum-size: 1000;
+        margin-top: 12;
+        margin-bottom: 12;
+        margin-start: 12;
+        margin-end: 12;
+
+        Box main_box {
+          orientation: vertical;
+        }
+      }
+    }
+
+    Adw.StatusPage empty_state_page {
+      title: _("Search for tracks");
+      description: _("Type in the search bar to find music");
+      icon-name: "edit-find-symbolic";
+      vexpand: true;
+      visible: false;
+    }
+
+    Adw.StatusPage no_results_page {
+      title: _("No results found");
+      description: _("Try a different search term");
+      icon-name: "face-sad-symbolic";
+      vexpand: true;
+      visible: false;
+    }
+  }
+}
+

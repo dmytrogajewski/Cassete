@@ -17,132 +17,86 @@ using Gee;
 public class Cassette.TrackInfo : SidebarChildBin {
 
     [GtkChild]
-    unowned LyricsPanel lyrics_panel;
+    unowned Gtk.Label track_name_value;
     [GtkChild]
-    unowned Gtk.Label writers_label;
+    unowned Gtk.Label track_version_value;
     [GtkChild]
-    unowned Gtk.Label major_label;
+    unowned Gtk.Box track_version_row;
     [GtkChild]
-    unowned Gtk.Stack loading_stack;
+    unowned Gtk.Label track_artists_value;
     [GtkChild]
-    unowned Gtk.Box lyrics_box;
+    unowned Gtk.Label album_name_value;
     [GtkChild]
-    unowned Gtk.Box similar_box;
+    unowned Gtk.Label album_year_value;
     [GtkChild]
-    unowned Gtk.Button play_button;
+    unowned Gtk.Box album_year_row;
     [GtkChild]
-    unowned PlayMarkTrack play_mark_track;
+    unowned Gtk.Label track_duration_value;
     [GtkChild]
-    unowned SaveStack save_stack;
+    unowned Gtk.Label album_genre_value;
     [GtkChild]
-    unowned LikeButton like_button;
+    unowned Gtk.Box album_genre_row;
     [GtkChild]
-    unowned DislikeButton dislike_button;
-    [GtkChild]
-    unowned TrackInfoPanel info_panel;
-    [GtkChild]
-    unowned TrackOptionsButton track_options_button;
+    unowned Gtk.Box track_info_box;
 
     public YaMAPI.Track track_info { get; construct set; }
+    YaMAPI.Album? album_info = null;
 
     public TrackInfo (YaMAPI.Track track_info) {
         Object (track_info: track_info);
     }
 
     construct {
-        info_panel.track_info = track_info;
-        track_options_button.track_info = track_info;
-
-        play_button.clicked.connect (play_mark_track.trigger);
-        play_mark_track.triggered_not_playing.connect (play_pause);
-
-        if (track_info.is_ugc) {
-            title = _("Your music track");
-            dislike_button.visible = false;
-        } else {
-            title = _("Music track");
-            dislike_button.visible = true;
-        }
-
+        title = _("Track Information");
         child_id = track_info.id;
         subtitle = track_info.title_with_version;
 
-        lyrics_panel.track_id = track_info.id;
-
-        play_mark_track.init_content (track_info.id);
-        dislike_button.init_content (track_info.id);
-        like_button.init_content (track_info.id);
-        save_stack.init_content (track_info.id);
-
-        load_content.begin ();
+        update_track_info ();
     }
 
-    async void load_content () {
-        YaMAPI.SimilarTracks? similar_tracks = null;
-        YaMAPI.Lyrics? lyrics = null;
+    void update_track_info () {
+        // Track name
+        track_name_value.label = track_info.title ?? "";
 
-        var yam_helper = Application.tape_client.yam_helper;
-        try {
-            similar_tracks = yield yam_helper.get_track_similar (track_info.id);
-        } catch (Error e) {
-            debug ("Failed to load similar tracks: %s", e.message);
-        }
-
-        if (track_info.lyrics_info != null) {
-            try {
-                if (track_info.lyrics_info.has_available_sync_lyrics) {
-                    lyrics = yield yam_helper.get_lyrics (track_info.id, true);
-                } else if (track_info.lyrics_info.has_available_text_lyrics) {
-                    lyrics = yield yam_helper.get_lyrics (track_info.id, false);
-                }
-            } catch (Error e) {
-                debug ("Failed to load lyrics: %s", e.message);
-            }
-        }
-
-        set_values (similar_tracks, lyrics);
-    }
-
-    void set_values (YaMAPI.SimilarTracks? similar_tracks, YaMAPI.Lyrics? lyrics) {
-        if (lyrics != null) {
-            if (lyrics.is_sync) {
-                lyrics_panel.set_sync_lyrics_lines (lyrics.text.to_array ());
-            } else {
-                lyrics_panel.set_text_lyrics_lines (lyrics.text.to_array ());
-            }
-            writers_label.label = lyrics.get_writers_names ();
-            major_label.label = lyrics.major.pretty_name;
+        // Track version
+        if (track_info.version != null && track_info.version != "") {
+            track_version_value.label = track_info.version;
+            track_version_row.visible = true;
         } else {
-            lyrics_box.visible = false;
+            track_version_row.visible = false;
         }
 
-        if (similar_tracks != null) {
-            if (similar_tracks.similar_tracks.size != 0) {
-                var track_list = new TrackList.simple ();
-                similar_box.append (track_list);
-                track_list.set_tracks_base (similar_tracks.similar_tracks, similar_tracks);
-            } else {
-                similar_box.visible = false;
-            }
+        // Artists
+        track_artists_value.label = track_info.get_artists_names ();
+
+        // Album name
+        if (!track_info.albums.is_empty) {
+            album_name_value.label = track_info.albums[0].title ?? "";
+            album_info = track_info.albums[0];
         } else {
-            similar_box.visible = false;
+            album_name_value.label = track_info.get_album_title ();
+            album_info = null;
         }
 
-        loading_stack.visible_child_name = "loaded";
+        // Album year
+        if (album_info != null && album_info.year > 0) {
+            album_year_value.label = album_info.year.to_string ();
+            album_year_row.visible = true;
+        } else {
+            album_year_row.visible = false;
+        }
+
+        // Duration
+        track_duration_value.label = ms2str (track_info.duration_ms, true);
+
+        // Genre
+        if (album_info != null && album_info.genre != null && album_info.genre != "") {
+            album_genre_value.label = album_info.genre;
+            album_genre_row.visible = true;
+        } else {
+            album_genre_row.visible = false;
+        }
     }
 
-    void play_pause () {
-        var player = Application.tape_client.player;
-        var track_list = new Gee.ArrayList<YaMAPI.Track> ();
-        track_list.add (track_info);
-
-        player.start_track_list (
-            track_list,
-            "various",
-            null,
-            0,
-            null
-        );
-    }
 }
 

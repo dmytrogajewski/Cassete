@@ -182,3 +182,32 @@ toolbarview headerbar.flat {
     padding-top: 0;
     padding-bottom: 0;
 }
+
+/* Sidebar background - match main window background */
+overlaysplitview > box:last-child {
+    background-color: @window_bg_color;
+}
+
+/* Track info tiles - information rows similar to properties panel */
+.track-info-tile {
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.track-info-row {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-start: 0;
+    padding-end: 0;
+}
+
+.track-info-label {
+    font-size: 0.9em;
+    opacity: 0.7;
+    margin-bottom: 2px;
+}
+
+.track-info-value {
+    font-size: 1em;
+    opacity: 1;
+}

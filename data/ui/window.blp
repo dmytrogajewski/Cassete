@@ -16,6 +16,17 @@ template $CassetteWindow : Adw.ApplicationWindow {
       margin-top: 0;
       margin-bottom: 0;
       css-classes: ["flat"];
+
+      [start]
+      ToggleButton search_toggle_button {
+        icon-name: "edit-find-symbolic";
+        tooltip-text: _("Search");
+      }
+
+      title-widget: Adw.WindowTitle window_title {};
+
+      [end]
+      $CassettePrimaryMenuButton menu_button {}
     }
 
     content: $CassetteSidebar sidebar {

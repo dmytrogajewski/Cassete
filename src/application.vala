@@ -88,6 +88,7 @@ public sealed class Cassette.Application : Adw.Application {
         typeof (Cassette.StationsView).ensure ();
         typeof (Cassette.AlbumView).ensure ();
         typeof (Cassette.DevelView).ensure ();
+        typeof (Cassette.SearchView).ensure ();
         typeof (Cassette.PlayMark).ensure ();
         typeof (Cassette.PlayMarkGlobal).ensure ();
         typeof (Cassette.PlayMarkTrack).ensure ();

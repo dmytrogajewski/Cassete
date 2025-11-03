@@ -33,6 +33,13 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
     };
 
     [GtkChild]
+    unowned Adw.HeaderBar headerbar;
+    [GtkChild]
+    unowned Adw.WindowTitle window_title;
+    [GtkChild]
+    unowned Gtk.ToggleButton search_toggle_button;
+
+    [GtkChild]
     unowned Sidebar sidebar;
     [GtkChild]
     unowned Adw.ToastOverlay toast_overlay;
@@ -42,6 +49,11 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
     unowned Adw.ToolbarView player_bar_toolbar;
     [GtkChild]
     unowned PlayerBar player_bar;
+    [GtkChild]
+    unowned PrimaryMenuButton menu_button;
+
+    Gtk.SearchEntry search_entry;
+    SearchView? current_search_view = null;
 
     public PageRoot? current_view { get; set; }
 
@@ -63,6 +75,31 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
         // Initialize PlayerBar with this window (it's already in the UI template)
         if (player_bar != null) {
             player_bar.window = this;
+        }
+
+        // Sync window title with WindowTitle widget
+        notify["title"].connect (() => {
+            if (window_title != null) {
+                window_title.title = title;
+            }
+        });
+        if (window_title != null) {
+            window_title.title = title;
+        }
+
+        // Create search entry for dynamic title-widget replacement
+        search_entry = new Gtk.SearchEntry ();
+        search_entry.placeholder_text = _("Search…");
+        search_entry.width_chars = 30;
+        search_entry.max_width_chars = 50;
+
+        // Connect search entry text changes to update search view
+        search_entry.search_changed.connect (on_search_changed);
+        search_entry.activate.connect (on_search_activate);
+
+        // Connect toggle button directly instead of using action
+        if (search_toggle_button != null) {
+            search_toggle_button.toggled.connect (on_search_toggled);
         }
     }
 
@@ -100,6 +137,51 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
 
     void on_close_sidebar_action () {
         sidebar.close ();
+    }
+
+    void on_search_toggled () {
+        bool is_active = search_toggle_button.active;
+
+        if (is_active) {
+            // Navigate to search view
+            if (current_view != null) {
+                if (current_search_view == null) {
+                    current_search_view = new SearchView ();
+                }
+                current_view.add_view (current_search_view);
+            }
+
+            // Show search entry in header
+            headerbar.title_widget = search_entry;
+            search_entry.visible = true;
+            search_entry.grab_focus ();
+            search_entry.select_region (0, -1);
+        } else {
+            // Hide search entry and restore title
+            headerbar.title_widget = window_title;
+            search_entry.text = "";
+
+            // Navigate back if we're on search view
+            if (current_view != null && current_search_view != null) {
+                var current_widget = current_view.current_widget;
+                if (current_widget is SearchView) {
+                    current_view.backward ();
+                }
+            }
+        }
+    }
+
+    void on_search_changed () {
+        debug ("Search entry changed: %s", search_entry.text);
+        if (current_search_view != null) {
+            current_search_view.search_query = search_entry.text;
+        } else {
+            debug ("current_search_view is null!");
+        }
+    }
+
+    void on_search_activate () {
+        // Search is updated automatically via search_changed signal
     }
 
     public Sidebar window_sidebar {
