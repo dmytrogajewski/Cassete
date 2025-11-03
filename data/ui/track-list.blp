@@ -1,0 +1,62 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteTrackList: Adw.Bin {
+  vexpand: false;
+  valign: start;
+
+  Box {
+    spacing: 16;
+    orientation: vertical;
+
+    Box search_box {
+      spacing: 8;
+
+      SearchEntry search_entry {
+        css-classes: ["transparent-background"];
+        search-delay: 900;
+        hexpand: true;
+        placeholder-text: _("Search track");
+      }
+
+      Label {
+        css-classes: ["dim-label"];
+        label: _("Sort by");
+      }
+
+      Box {
+        spacing: 1;
+
+        MenuButton sort_menu_button {
+          css-classes: ["flat"];
+          valign: center;
+        }
+
+        Button sort_direction_button {
+          css-classes: ["flat"];
+          icon-name: "view-sort-ascending-symbolic";
+        }
+
+        Button remove_sort_button {
+          css-classes: ["flat"];
+          visible: false;
+          icon-name: "window-close-symbolic";
+        }
+      }
+    }
+
+    FlowBox track_box {
+      selection-mode: none;
+      max-children-per-line: 1;
+      vexpand: true;
+      row-spacing: 4;
+    }
+
+    Adw.StatusPage status_page {
+      title: _("No tracks to display");
+      icon-name: "face-sad-symbolic";
+      visible: false;
+    }
+  }
+}
+

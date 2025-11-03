@@ -1,0 +1,102 @@
+/*
+ * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+using Tape;
+using Tape.YaMAPI;
+using Gee;
+
+[GtkTemplate (ui = "/space/rirusha/Cassette/ui/sidebar.ui")]
+public class Cassette.Sidebar : ShrinkableBin {
+
+    [GtkChild]
+    unowned Adw.OverlaySplitView overlay_split_view;
+    [GtkChild]
+    unowned Adw.ToolbarView toolbar_view;
+    [GtkChild]
+    unowned Adw.WindowTitle window_title;
+
+    public string child_id { get; set; }
+
+    public Gtk.Widget content {
+        get {
+            return overlay_split_view.content;
+        }
+        set {
+            overlay_split_view.content = value;
+        }
+    }
+
+    public SidebarChildBin? sidebar_child {
+        get {
+            return (SidebarChildBin?) toolbar_view.content;
+        }
+        set {
+            toolbar_view.content = value;
+
+            if (value != null) {
+                value.bind_property ("title", window_title, "title", BindingFlags.DEFAULT | BindingFlags.SYNC_CREATE);
+                value.bind_property ("subtitle", window_title, "subtitle", BindingFlags.DEFAULT | BindingFlags.SYNC_CREATE);
+            }
+
+            child_id = value != null ? value.child_id : "";
+            is_shown = value != null;
+
+            child_changed (value);
+        }
+    }
+
+    public bool is_shown { get; set; }
+
+    public bool collapsed { get; set; }
+
+    public signal void child_changed (SidebarChildBin? new_child);
+
+    construct {
+        bind_property ("is-shrinked", this, "collapsed", BindingFlags.DEFAULT);
+    }
+
+    public void close () {
+        sidebar_child = null;
+    }
+
+    public void show_track_info (YaMAPI.Track track_info) {
+        sidebar_child = null;
+
+        if (track_info.available) {
+            sidebar_child = new TrackInfo (track_info);
+        }
+    }
+
+    public void show_wave_settings () {
+        sidebar_child = null;
+
+        var player = Application.tape_client.player;
+        if (player.mode is PlayerFlow && player.mode.context_id == "user:onyourwave") {
+            sidebar_child = new WaveSettings ();
+        } else {
+            child_id = "";
+            is_shown = false;
+        }
+    }
+
+    public void show_queue () {
+        sidebar_child = null;
+
+        var player = Application.tape_client.player;
+        if (player.mode is PlayerTrackList) {
+            sidebar_child = new PlayerQueue ();
+        } else {
+            child_id = "";
+            is_shown = false;
+        }
+    }
+}
+

@@ -1,0 +1,45 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassettePlaylistsView : Adw.Bin {
+  ScrolledWindow {
+    hexpand: true;
+    propagate-natural-height: true;
+    hscrollbar-policy: never;
+
+    Adw.Clamp {
+      maximum-size: 1900;
+
+      Box {
+        orientation: vertical;
+
+        Label playlists_label {
+          css-classes: ["title-1"];
+          margin-top: 4;
+          label: _("Your playlists");
+        }
+
+        FlowBox flow_box {
+          selection-mode: none;
+          margin-top: 8;
+          margin-bottom: 8;
+          homogeneous: false;
+        }
+
+        Label liked_playlists_label {
+          css-classes: ["title-1"];
+          label: _("Also you liked these playlists");
+        }
+
+        FlowBox likes_flow_box {
+          activate-on-single-click: true;
+          selection-mode: none;
+          margin-top: 8;
+          margin-bottom: 8;
+          homogeneous: true;
+        }
+      }
+    }
+  }
+}
+

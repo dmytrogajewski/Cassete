@@ -1,0 +1,167 @@
+using Gtk 4.0;
+
+template $CassetteTrackInfo: $CassetteSidebarChildBin {
+  ScrolledWindow {
+    propagate-natural-height: true;
+    hscrollbar-policy: never;
+
+    Box {
+      margin-top: 12;
+      margin-bottom: 12;
+      margin-start: 12;
+      margin-end: 12;
+      orientation: vertical;
+      spacing: 8;
+
+      $CassetteTrackInfoPanel info_panel {
+        orientation: vertical;
+        margin-bottom: 8;
+      }
+
+      CenterBox {
+        center-widget: CenterBox {
+          start-widget: $CassetteDislikeButton dislike_button {
+            css-classes: [
+              "flat",
+              "circular"
+            ];
+
+            object-content-type: track;
+            margin-end: 4;
+          };
+
+          center-widget: Button play_button {
+            css-classes: [
+              "suggested-action",
+              "pill"
+            ];
+
+            vexpand: true;
+            valign: center;
+
+            $CassettePlayMarkTrack play_mark_track {}
+          };
+
+          end-widget: $CassetteLikeButton like_button {
+            css-classes: [
+              "flat",
+              "circular"
+            ];
+
+            object-content-type: track;
+            margin-start: 4;
+          };
+        };
+
+        end-widget: Box {
+          halign: end;
+          spacing: 4;
+          margin-end: 8;
+
+          $CassetteSaveStack save_stack {
+            hexpand: false;
+            content-type: track;
+          }
+
+          $CassetteTrackOptionsButton track_options_button {
+            css-classes: [
+              "flat"
+            ];
+
+            hexpand: false;
+            valign: center;
+          }
+        };
+      }
+
+      Stack loading_stack {
+        StackPage {
+          name: "loading";
+
+          child: $CassetteLoadingSpinner loading_spinner {
+            size: 24;
+          };
+        }
+
+        StackPage {
+          name: "loaded";
+
+          child: Box {
+            orientation: vertical;
+
+            Box lyrics_box {
+              orientation: vertical;
+              spacing: 12;
+              margin-top: 16;
+
+              Label {
+                css-classes: [
+                  "title-3"
+                ];
+
+                label: _("Track lyrics");
+              }
+
+              $CassetteLyricsPanel lyrics_panel {}
+
+              Box {
+                orientation: vertical;
+
+                Label {
+                  css-classes: [
+                    "caption-heading"
+                  ];
+
+                  halign: start;
+                  label: _("Authors");
+                }
+
+                Label writers_label {
+                  css-classes: [
+                    "caption"
+                  ];
+
+                  halign: start;
+                  wrap: true;
+                }
+
+                Label {
+                  css-classes: [
+                    "caption-heading"
+                  ];
+
+                  halign: start;
+                  label: _("Source");
+                }
+
+                Label major_label {
+                  css-classes: [
+                    "caption"
+                  ];
+
+                  halign: start;
+                  wrap: true;
+                }
+              }
+            }
+
+            Box similar_box {
+              orientation: vertical;
+              margin-top: 16;
+
+              Label {
+                css-classes: [
+                  "title-3"
+                ];
+
+                label: _("Similar tracks");
+                margin-bottom: 16;
+              }
+            }
+          };
+        }
+      }
+    }
+  }
+}
+

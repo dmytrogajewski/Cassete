@@ -5,7 +5,20 @@ template $CassetteWindow : Adw.ApplicationWindow {
   default-height: 900;
   default-width: 800;
 
-  Adw.ToastOverlay toast_overlay {
-    $CassetteAuth auth {}
+  Adw.ToolbarView player_bar_toolbar {
+    bottom-bar-style: raised;
+    reveal-bottom-bars: false;
+
+    content: $CassetteSidebar sidebar {
+      content: Adw.ToastOverlay toast_overlay {
+        $CassetteAuth auth {}
+      };
+    };
+
+    [bottom]
+    $CassettePlayerBar player_bar {
+      visible: false;
+      window: template;
+    }
   }
 }

@@ -1,0 +1,55 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassettePlaylistMicro : Adw.Bin {
+  hexpand: false;
+  vexpand: false;
+
+  Adw.Clamp {
+    maximum-size: 220;
+
+    Button self {
+      has-frame: false;
+
+      Box {
+        spacing: 8;
+        orientation: vertical;
+
+        $CassetteCoverImage cover_image {
+          cover-size: big;
+          image-widget-size: 200;
+        }
+
+        Box {
+          orientation: horizontal;
+          spacing: 8;
+          hexpand: true;
+
+          Box {
+            orientation: vertical;
+            spacing: 8;
+            hexpand: true;
+
+            Label playlist_title {
+              label: _("Playlist");
+              justify: center;
+              halign: center;
+              wrap: true;
+              wrap-mode: word_char;
+            }
+          }
+
+          $CassetteSaveStack save_stack {
+            halign: end;
+            valign: start;
+            hexpand: false;
+            vexpand: false;
+            content-type: playlist;
+            hide-when-none: true;
+          }
+        }
+      }
+    }
+  }
+}
+

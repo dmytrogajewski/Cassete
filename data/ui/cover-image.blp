@@ -1,0 +1,21 @@
+using Gtk 4.0;
+
+template $CassetteCoverImage: Frame {
+  halign: center;
+  valign: center;
+
+  Stack stack {
+    hhomogeneous: true;
+
+    StackPage {
+      name: "placeholder";
+      child: Image placeholder_image {
+        icon-size: large;
+        icon-name: "audio-x-generic-symbolic";
+        width-request: bind template.image-widget-size;
+        height-request: bind template.image-widget-size;
+      };
+    }
+  }
+}
+

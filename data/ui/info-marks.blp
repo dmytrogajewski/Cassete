@@ -1,0 +1,32 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteInfoMarks : Adw.Bin {
+  Box {
+    spacing: 8;
+
+    Image track_replaced_mark {
+      width-request: 38;
+      height-request: 38;
+      icon-name: "replaced-symbolic";
+      visible: false;
+    }
+
+    Image exp_mark {
+      width-request: 38;
+      height-request: 38;
+      visible: false;
+      icon-name: "explicit-symbolic";
+      tooltip-text: _("Explicit content");
+    }
+
+    Image child_mark {
+      width-request: 38;
+      height-request: 38;
+      visible: false;
+      icon-name: "child-symbolic";
+      tooltip-text: _("Child content");
+    }
+  }
+}
+

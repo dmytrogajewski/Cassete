@@ -24,17 +24,26 @@ using Tape;
 public sealed class Cassette.Window : Adw.ApplicationWindow {
 
     const ActionEntry[] ACTION_ENTRIES = {
-        //  { "close-sidebar", on_close_sidebar_action },
+        { "close-sidebar", on_close_sidebar_action },
         //  { "show-disliked-tracks", on_show_disliked_tracks_action },
         { "preferences", show_preferences },
         { "about", show_about },
         { "show-auth", show_auth },
+        { "show-help-overlay", show_help_overlay },
     };
 
     [GtkChild]
+    unowned Sidebar sidebar;
+    [GtkChild]
     unowned Adw.ToastOverlay toast_overlay;
     [GtkChild]
-    unowned Auth auth;
+    public unowned Auth auth;
+    [GtkChild]
+    unowned Adw.ToolbarView player_bar_toolbar;
+    [GtkChild]
+    unowned PlayerBar player_bar;
+
+    public PageRoot? current_view { get; set; }
 
     public Window (Cassette.Application app) {
         Object (application: app);
@@ -50,6 +59,11 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
         if (Config.IS_DEVEL) {
             add_css_class ("devel");
         }
+
+        // Initialize PlayerBar with this window (it's already in the UI template)
+        if (player_bar != null) {
+            player_bar.window = this;
+        }
     }
 
     public void show_message (string message) {
@@ -61,10 +75,36 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
     }
 
     void show_preferences () {
-
+        var pref_win = new PreferencesDialog ();
+        pref_win.present (this);
     }
 
     void show_about () {
         build_about ().present (this);
+    }
+
+    void show_help_overlay () {
+        var shortcuts = new ShortcutsWindow ();
+        shortcuts.present (this);
+    }
+
+    public void show_player_bar () {
+        player_bar_toolbar.reveal_bottom_bars = true;
+        player_bar.visible = true;
+    }
+
+    public void hide_player_bar () {
+        player_bar_toolbar.reveal_bottom_bars = false;
+        player_bar.visible = false;
+    }
+
+    void on_close_sidebar_action () {
+        sidebar.close ();
+    }
+
+    public Sidebar window_sidebar {
+        get {
+            return sidebar;
+        }
     }
 }

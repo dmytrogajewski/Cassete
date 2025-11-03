@@ -1,0 +1,10 @@
+using Gtk 4.0;
+
+template $CassettePlayerQueue: $CassetteSidebarChildBin {
+  title: _("Playing now");
+
+  ScrolledWindow scrolled_window {
+    hscrollbar-policy: never;
+    propagate-natural-height: true;
+  }
+}

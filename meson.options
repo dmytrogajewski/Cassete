@@ -9,3 +9,9 @@ option(
   type: 'boolean',
   value: true
 )
+option(
+  'tests',
+  description: 'Build and run tests',
+  type: 'boolean',
+  value: false
+)

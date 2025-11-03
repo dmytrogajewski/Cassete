@@ -1,0 +1,53 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassettePlaylistChooseDialog: Adw.Dialog {
+  content-width: 600;
+  content-height: 700;
+  title: _("Choose playlist to add");
+
+  Adw.ToolbarView toolbar_view {
+    [top]
+    Adw.HeaderBar {}
+
+    content: Adw.Clamp {
+      maximum-size: 800;
+
+      Stack main_stack {
+        StackPage {
+          name: "loading";
+
+          child: Spinner spinner_loading {
+            vexpand: false;
+            hexpand: false;
+            valign: center;
+            halign: center;
+            height-request: 32;
+            width-request: 32;
+          };
+        }
+
+        StackPage {
+          name: "done";
+
+          child: ScrolledWindow {
+            hscrollbar-policy: never;
+
+            Adw.Clamp {
+              margin-top: 16;
+              margin-bottom: 16;
+              margin-start: 16;
+              margin-end: 16;
+              maximum-size: 700;
+
+              Box main_box {
+                orientation: vertical;
+              }
+            }
+          };
+        }
+      }
+    };
+  }
+}
+

@@ -1,0 +1,146 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteShortcutsWindow: Adw.Dialog {
+  title: _("Keyboard Shortcuts");
+  content-width: 500;
+  content-height: 600;
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {}
+
+    content: ScrolledWindow {
+      Adw.Clamp {
+        margin-top: 24;
+        margin-bottom: 24;
+        margin-start: 12;
+        margin-end: 12;
+        maximum-size: 600;
+
+        Box {
+          orientation: vertical;
+          spacing: 24;
+
+          Adw.PreferencesGroup {
+            title: _("Playback");
+
+            Adw.ActionRow {
+              title: _("Play/Pause");
+              activatable: false;
+
+              [suffix]
+              Gtk.Label {
+                label: "Space";
+                css-classes: ["keycap"];
+              }
+            }
+
+            Adw.ActionRow {
+              title: _("Previous Track");
+              activatable: false;
+
+              [suffix]
+              Gtk.Label {
+                label: "Alt + ←";
+                css-classes: ["keycap"];
+              }
+            }
+
+            Adw.ActionRow {
+              title: _("Next Track");
+              activatable: false;
+
+              [suffix]
+              Gtk.Label {
+                label: "Alt + →";
+                css-classes: ["keycap"];
+              }
+            }
+
+            Adw.ActionRow {
+              title: _("Change Shuffle");
+              activatable: false;
+
+              [suffix]
+              Gtk.Label {
+                label: "Ctrl + S";
+                css-classes: ["keycap"];
+              }
+            }
+
+            Adw.ActionRow {
+              title: _("Change Repeat");
+              activatable: false;
+
+              [suffix]
+              Gtk.Label {
+                label: "Ctrl + R";
+                css-classes: ["keycap"];
+              }
+            }
+
+            Adw.ActionRow {
+              title: _("Mute");
+              activatable: false;
+
+              [suffix]
+              Gtk.Label {
+                label: "Ctrl + M";
+                css-classes: ["keycap"];
+              }
+            }
+          }
+
+          Adw.PreferencesGroup {
+            title: _("Application");
+
+            Adw.ActionRow {
+              title: _("Quit");
+              activatable: false;
+
+              [suffix]
+              Gtk.Label {
+                label: "Ctrl + Q";
+                css-classes: ["keycap"];
+              }
+            }
+
+            Adw.ActionRow {
+              title: _("Share Current Track");
+              activatable: false;
+
+              [suffix]
+              Gtk.Label {
+                label: "Ctrl + Shift + C";
+                css-classes: ["keycap"];
+              }
+            }
+
+            Adw.ActionRow {
+              title: _("Parse URL from Clipboard");
+              activatable: false;
+
+              [suffix]
+              Gtk.Label {
+                label: "Ctrl + Shift + V";
+                css-classes: ["keycap"];
+              }
+            }
+
+            Adw.ActionRow {
+              title: _("Show Keyboard Shortcuts");
+              activatable: false;
+
+              [suffix]
+              Gtk.Label {
+                label: "F1";
+                css-classes: ["keycap"];
+              }
+            }
+          }
+        }
+      }
+    };
+  }
+}

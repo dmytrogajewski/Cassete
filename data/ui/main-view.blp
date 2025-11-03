@@ -1,0 +1,42 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteMainView : $CassetteBaseView {
+  Box {
+    orientation: vertical;
+    spacing: 24;
+
+    Adw.StatusPage status_page {
+      title: _("Welcome");
+      description: _("Select a station to start listening");
+      vexpand: true;
+      valign: center;
+    }
+
+    Adw.Clamp {
+      margin-top: 24;
+      margin-bottom: 24;
+      margin-start: 12;
+      margin-end: 12;
+      maximum-size: 450;
+
+      Box {
+        orientation: vertical;
+        spacing: 4;
+
+        Button stations_view_button {
+          label: _("All stations");
+        }
+
+        Button playlists_view_button {
+          label: _("My playlists");
+        }
+
+        Button liked_tracks_button {
+          label: _("Liked tracks");
+        }
+      }
+    }
+  }
+}
+

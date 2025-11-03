@@ -20,5 +20,29 @@
 
 [GtkTemplate (ui = "/space/rirusha/Cassette/ui/main-content.ui")]
 public sealed class Cassette.MainContent : Adw.Bin {
-    
+
+    [GtkChild]
+    unowned Adw.ViewStack view_stack;
+
+    public Window? window { get; construct; }
+
+    public PageRoot? main_page_root { get; private set; }
+
+    public MainContent (Window? window = null) {
+        Object (window: window);
+    }
+
+    construct {
+        if (window != null) {
+            initialize_navigation ();
+        }
+    }
+
+    void initialize_navigation () {
+        var main_view = new MainView ();
+        main_page_root = new PageRoot (window, main_view);
+
+        view_stack.add_named (main_page_root, "main");
+        view_stack.visible_child_name = "main";
+    }
 }

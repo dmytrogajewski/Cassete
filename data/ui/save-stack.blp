@@ -1,0 +1,49 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteSaveStack : Adw.Bin {
+  width-request: 42;
+  height-request: 42;
+
+  Stack save_stack {
+    width-request: 38;
+    height-request: 38;
+    halign: start;
+    hexpand: true;
+
+    StackPage {
+      name: "none";
+      child: Adw.Bin {};
+    }
+
+    StackPage {
+      name: "loading";
+      child: Spinner save_spin {
+        tooltip-text: _("Content saving…");
+        vexpand: false;
+        hexpand: false;
+        halign: center;
+        valign: center;
+      };
+    }
+
+    StackPage {
+      name: "temp";
+      child: Image temp_mark_image {
+        css-classes: ["dim-label"];
+        tooltip-text: _("Content cached");
+        icon-name: "cache-temp-symbolic";
+      };
+    }
+
+    StackPage {
+      name: "perm";
+      child: Image perm_mark_image {
+        css-classes: ["dim-label"];
+        tooltip-text: _("Content saved");
+        icon-name: "cache-perm-symbolic";
+      };
+    }
+  }
+}
+

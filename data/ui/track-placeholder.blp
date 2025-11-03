@@ -1,0 +1,12 @@
+using Gtk 4.0;
+
+template $CassetteTrackPlaceholder: Gtk.Frame {
+  Label {
+    css-classes: ["dim-label"];
+    label: _("Loading…");
+    halign: start;
+    margin-start: 14;
+    height-request: 78;
+  }
+}
+

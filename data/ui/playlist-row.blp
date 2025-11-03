@@ -1,0 +1,50 @@
+using Gtk 4.0;
+
+template $CassettePlaylistRow: Frame {
+  Box {
+    margin-top: 6;
+    margin-bottom: 6;
+    margin-start: 6;
+    margin-end: 6;
+    spacing: 3;
+
+    $CassetteCoverImage cover_image {
+      cover-size: big;
+      image-widget-size: 60;
+    }
+
+    Separator {
+      css-classes: [
+        "spacer"
+      ];
+    }
+
+    Box {
+      orientation: vertical;
+      hexpand: true;
+      halign: start;
+
+      Label playlist_title {
+        halign: start;
+      }
+
+      Label track_num_label {
+        css-classes: [
+          "dim-label"
+        ];
+
+        halign: start;
+        label: _("Empty");
+      }
+    }
+
+    Button add_button {
+      width-request: 42;
+      height-request: 42;
+      valign: center;
+      halign: center;
+      icon-name: "plus-symbolic";
+    }
+  }
+}
+

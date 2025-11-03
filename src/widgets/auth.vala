@@ -59,7 +59,9 @@ public sealed class Cassette.Auth : Loadable {
 
     public void to_main () {
         clear_main ();
-        win_stack.add_named (new MainContent (), "main");
+        var window = (Window?) get_root ();
+        var main_content = new MainContent (window);
+        win_stack.add_named (main_content, "main");
         win_stack.visible_child_name = "main";
         is_loading = false;
     }
@@ -127,5 +129,41 @@ public sealed class Cassette.Auth : Loadable {
     [GtkCallback]
     void on_to_auth_clicked () {
         Tape.Storager.remove_file.begin (Application.tape_client.cachier.storager.cookies_file, to_auth);
+    }
+
+    public void log_out () {
+        var dialog = new Adw.AlertDialog (
+            _("Log out?"),
+            _("You will need to log in again to use the app")
+        );
+
+        dialog.add_response ("cancel", _("Cancel"));
+        dialog.add_response ("logout", _("Log out"));
+
+        dialog.set_response_appearance ("logout", Adw.ResponseAppearance.DESTRUCTIVE);
+
+        dialog.default_response = "cancel";
+        dialog.close_response = "cancel";
+
+        var window = (Window?) get_root ();
+        if (window == null) {
+            return;
+        }
+
+        dialog.response.connect ((dialog, response) => {
+            if (response == "logout") {
+                force_log_out ();
+            }
+        });
+
+        dialog.present (window);
+    }
+
+    public void force_log_out () {
+        var storager = Application.tape_client.cachier.storager;
+        storager.clear_user_data.begin (true, false, (obj, res) => {
+            storager.clear_user_data.end (res);
+            ((Application) GLib.Application.get_default ()).quit ();
+        });
     }
 }

@@ -1,0 +1,40 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassettePlaylistCreateButton : Adw.Bin {
+  hexpand: false;
+  vexpand: false;
+
+  Adw.Clamp {
+    maximum-size: 220;
+
+    Button real_button {
+      has-frame: false;
+
+      Box {
+        spacing: 8;
+        orientation: vertical;
+
+        Frame {
+          css-classes: ["big-art", "gray-background"];
+
+          Image {
+            width-request: 200;
+            height-request: 200;
+            icon-name: "plus-symbolic";
+            icon-size: large;
+          }
+        }
+
+        Label {
+          label: _("Create playlist");
+          justify: center;
+          halign: center;
+          wrap: true;
+          wrap-mode: word_char;
+        }
+      }
+    }
+  }
+}
+

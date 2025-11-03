@@ -1,0 +1,38 @@
+using Gtk 4.0;
+
+template $CassetteActionCardStation: $CassetteActionCardCustom {
+  Box content_box {
+    orientation: vertical;
+    spacing: 8;
+
+    Stack image_stack {
+      transition-type: crossfade;
+      transition-duration: 75;
+
+      StackPage {
+        name: "image";
+
+        child: Image content_image {
+          icon-size: large;
+        };
+      }
+
+      StackPage {
+        name: "play-mark";
+
+        child: $CassettePlayMarkContext play_mark_context {
+          context-type: "radio";
+        };
+      }
+    }
+
+    Label content_label {
+      css-classes: [
+        "heading"
+      ];
+
+      ellipsize: end;
+    }
+  }
+}
+

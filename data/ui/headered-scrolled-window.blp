@@ -1,0 +1,17 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteHeaderedScrolledWindow: Adw.Bin {
+  Box {
+    orientation: vertical;
+
+    Revealer header_revealer {
+      reveal-child: bind template.reveal-header bidirectional;
+
+      Adw.Bin header_bin {}
+    }
+
+    ScrolledWindow real_scrolled_window {}
+  }
+}
+

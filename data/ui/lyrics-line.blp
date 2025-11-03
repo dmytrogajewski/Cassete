@@ -1,0 +1,31 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteLyricsLine: Adw.Bin {
+  hexpand: true;
+
+  Box {
+    orientation: vertical;
+
+    Revealer line_small {
+      reveal-child: true;
+      transition-type: crossfade;
+
+      Label line_small_label {
+        css-classes: ["title-4"];
+        halign: start;
+        wrap: true;
+      }
+    }
+
+    Label line_big_label {
+      css-classes: ["title-1"];
+      visible: false;
+      halign: start;
+      wrap: true;
+      margin-top: 6;
+      margin-bottom: 6;
+    }
+  }
+}
+
