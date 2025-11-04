@@ -109,7 +109,8 @@ public class Cassette.ActionCardStation : ActionCardCustom {
         content_image.icon_name = station_info.icon.get_internal_icon_name (station_info.id.normal);
 
         // Set accessible name for screen readers based on station name
-        set_property ("accessible-label", station_info.name);
+        // Note: Using tooltip for accessibility as accessible-label property is not available
+        tooltip_text = station_info.name;
 
         var gs = new Gtk.EventControllerMotion ();
         gs.enter.connect (() => {

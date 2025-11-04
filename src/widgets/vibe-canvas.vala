@@ -268,7 +268,7 @@ in vec2 v_uv; out vec4 color; void main(){ color = vec4(1.0,0.0,0.2,1.0); }
         int w_fb = w_log * scale;
         int h_fb = h_log * scale;
         GL.glViewport (0, 0, w_fb, h_fb);
-        GL.glClearColor (0.06f, 0.06f, 0.06f, 1.0f);
+        GL.glClearColor (0.0f, 0.0f, 0.0f, 1.0f);
         GL.glClear (GL.GL_COLOR_BUFFER_BIT);
         GL.glUseProgram (program);
         if (u_time_loc >= 0) GL.glUniform1f (u_time_loc, (float)(((GLib.get_monotonic_time () / 1e6) - t0) * 0.5));

@@ -128,6 +128,10 @@ public sealed class Cassette.Application : Adw.Application {
     protected override void startup () {
         base.startup ();
 
+        // Force dark theme like GNOME Terminal
+        var style_manager = Adw.StyleManager.get_default ();
+        style_manager.color_scheme = Adw.ColorScheme.FORCE_DARK;
+
         app_settings = new GLib.Settings (@"$(Config.APP_ID).application");
         client_settings = new GLib.Settings (@"$(Config.APP_ID).client");
 

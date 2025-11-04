@@ -72,9 +72,9 @@ public abstract class Cassette.TrackRow: Reactable {
             name = title;
         }
 
-        // Set accessible label for screen readers
-        // In GTK4, this is done via the accessible-label property
-        set_property ("accessible-label", name);
+        // Set accessible name for screen readers
+        // Note: Using tooltip for accessibility as accessible-label property is not available
+        tooltip_text = name;
     }
 
     static construct {

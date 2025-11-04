@@ -285,52 +285,55 @@ public class Cassette.MainView : BaseView {
         try {
             var in_style = yield client.landing_blocks_in_style ();
             if (in_style != null && in_style.tabs != null) {
+                debug ("Loaded in-style with %d tabs", in_style.tabs.size);
                 foreach (var tab in in_style.tabs) {
-                    if (tab.artist != null && tab.id != null) {
-                        // Create tab button
-                        var tab_button = new Gtk.ToggleButton ();
-                        tab_button.label = tab.title ?? tab.artist.name;
-                        tab_button.group = null; // Will be grouped by Gtk
-                        tab_button.toggled.connect (() => {
-                            if (tab_button.active && in_style_stack != null) {
-                                in_style_stack.visible_child_name = tab.id;
+                        if (tab.title != null) {
+                            // Create tab button
+                            var tab_button = new Gtk.ToggleButton ();
+                            tab_button.label = tab.title;
+                            tab_button.group = null; // Will be grouped by Gtk
+                            tab_button.toggled.connect (() => {
+                                if (tab_button.active && in_style_stack != null) {
+                                    in_style_stack.visible_child_name = tab.id.to_string ();
+                                }
+                            });
+                            
+                            // Check if this is the first tab
+                            if (in_style_tabs_box.get_first_child () == null) {
+                                tab_button.active = true; // First tab active
                             }
-                        });
-                        
-                        // Check if this is the first tab
-                        if (in_style_tabs_box.get_first_child () == null) {
-                            tab_button.active = true; // First tab active
-                        }
-                        
-                        in_style_tabs_box.append (tab_button);
-                        
-                        // Create albums box for this tab
-                        var albums_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 12);
-                        albums_box.margin_start = 12;
-                        albums_box.margin_end = 12;
-                        albums_box.margin_top = 12;
-                        albums_box.margin_bottom = 12;
-                        
-                        var albums_scrolled = new Gtk.ScrolledWindow ();
-                        albums_scrolled.height_request = 280;
-                        albums_scrolled.hscrollbar_policy = Gtk.PolicyType.AUTOMATIC;
-                        albums_scrolled.vscrollbar_policy = Gtk.PolicyType.NEVER;
-                        albums_scrolled.child = albums_box;
-                        
-                        in_style_stack.add_named (albums_scrolled, tab.id);
-                        in_style_boxes[tab.id] = albums_box;
-                        
-                        // Load albums for this tab
-                        if (tab.items != null) {
-                            foreach (var item in tab.items) {
-                                if (item.album != null) {
-                                    var album_micro = new AlbumMicro (this, item.album);
-                                    albums_box.append (album_micro);
+                            
+                            in_style_tabs_box.append (tab_button);
+                            
+                            // Create albums box for this tab
+                            var albums_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 12);
+                            albums_box.margin_start = 12;
+                            albums_box.margin_end = 12;
+                            albums_box.margin_top = 12;
+                            albums_box.margin_bottom = 12;
+                            
+                            var albums_scrolled = new Gtk.ScrolledWindow ();
+                            albums_scrolled.height_request = 280;
+                            albums_scrolled.hscrollbar_policy = Gtk.PolicyType.AUTOMATIC;
+                            albums_scrolled.vscrollbar_policy = Gtk.PolicyType.NEVER;
+                            albums_scrolled.child = albums_box;
+                            
+                            in_style_stack.add_named (albums_scrolled, tab.id.to_string ());
+                            in_style_boxes[tab.id.to_string ()] = albums_box;
+                            
+                            // Load albums for this tab
+                            if (tab.items != null) {
+                                foreach (var item in tab.items) {
+                                    if (item.album != null) {
+                                        var album_micro = new AlbumMicro (this, item.album);
+                                        albums_box.append (album_micro);
+                                    }
                                 }
                             }
                         }
-                    }
                 }
+            } else {
+                debug ("in-style is null or tabs is null");
             }
         } catch (Error e) {
             warning ("Failed to load in-style: %s", e.message);

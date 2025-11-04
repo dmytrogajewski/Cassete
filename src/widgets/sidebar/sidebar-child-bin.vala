@@ -25,7 +25,8 @@ public abstract class Cassette.SidebarChildBin: Adw.Bin {
 
     void update_accessible_name () {
         if (title != null && title.length > 0) {
-            set_property ("accessible-label", title);
+            // Set accessible name using tooltip for screen readers
+            tooltip_text = title;
         }
     }
 

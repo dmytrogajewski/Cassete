@@ -2,6 +2,108 @@
 @define-color accent_bg_color #ffdb4d; */
 
 /**
+ * Black theme like GNOME Terminal
+ */
+window {
+    background-color: #000000;
+}
+
+adwapplicationwindow {
+    background-color: #000000;
+}
+
+windowcontents {
+    background-color: #000000;
+}
+
+/* Main window background */
+.adwapplicationwindow > contents {
+    background-color: #000000;
+}
+
+/* Headerbar - make it black like GNOME Terminal */
+headerbar {
+    background-color: #000000;
+}
+
+headerbar.titlebar {
+    background-color: #000000;
+}
+
+/* Sidebar background - be more specific to avoid affecting all boxes */
+overlaysplitview > box,
+sidebar > box,
+box.background {
+    background-color: #000000;
+}
+
+/* Sidebar split view */
+overlaysplitview {
+    background-color: #000000;
+}
+
+/* Toolbar view */
+toolbarview {
+    background-color: #000000;
+}
+
+/* Main content areas */
+scrolledwindow {
+    background-color: #000000;
+}
+
+scrollbar {
+    background-color: #000000;
+}
+
+/* Stack pages */
+stack {
+    background-color: #000000;
+}
+
+viewstack {
+    background-color: #000000;
+}
+
+/* View switcher */
+viewswitcher {
+    background-color: #000000;
+}
+
+/* Adwaita specific widgets - pure black */
+adwbin {
+    background-color: #000000;
+}
+
+adwviewstack {
+    background-color: #000000;
+}
+
+adwflap {
+    background-color: #000000;
+}
+
+adwtoastoverlay {
+    background-color: #000000;
+}
+
+adwclamp {
+    background-color: #000000;
+}
+
+adwviewswitcher {
+    background-color: #000000;
+}
+
+adwleaflet {
+    background-color: #000000;
+}
+
+adwnavigationview {
+    background-color: #000000;
+}
+
+/**
  * Headered Scrollled Window
  */
 
@@ -10,7 +112,7 @@
 }
 
 .light-background {
-    background-color: @sidebar_bg_color;
+    background-color: #000000;
 }
 
 /**
@@ -199,9 +301,9 @@ toolbarview headerbar.flat {
     padding-bottom: 0;
 }
 
-/* Sidebar background - match main window background */
+/* Sidebar background - pure black */
 overlaysplitview > box:last-child {
-    background-color: @window_bg_color;
+    background-color: #000000;
 }
 
 /* Track info tiles - information rows similar to properties panel */
