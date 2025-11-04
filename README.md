@@ -2,6 +2,8 @@ README language: \
 [![En](https://img.shields.io/badge/en-green)](README.md)
 [![Ru](https://img.shields.io/badge/ru-gray)](docs/README-ru.md)
 
+> **⚠️ Notice:** This is a hard vibe-coded fork of [Cassette](https://gitlab.gnome.org/Rirusha/Cassette). This is my personal experiment and may contain experimental features, bugs, or incomplete implementations. Use at your own discretion.
+
 <div align="center">
   <h1>
     <img
@@ -25,6 +27,13 @@ README language: \
 </div>
 
 <div align="center"><h4>GTK4/Adwaita application that allows you to use Yandex Music service on Linux operating systems.</h4></div>
+
+<div align="center">
+  <video autoplay loop muted playsinline style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+    <source src="assets/demo.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 <div align="center">
   <img src="data/images/1-liked-view.png" alt="Preview"/>
