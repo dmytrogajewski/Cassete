@@ -78,7 +78,35 @@ public sealed class Cassette.CoverImage : Gtk.Frame {
 
         Gdk.Pixbuf? pixbuf_buffer = null;
 
+        debug ("[CoverImage] load_image start: type=%s size=%d", yam_object.get_type ().name (), (int) cover_size);
         var image_bytes = yield Application.tape_client.cachier.get_image (yam_object, (int) cover_size);
+        if (image_bytes != null) {
+            debug ("[CoverImage] cache hit: %zu bytes", image_bytes.get_size ());
+        } else {
+            debug ("[CoverImage] cache miss, trying fallback network load");
+        }
+        // Fallback: try to load directly from network if cache missed
+        if (image_bytes == null) {
+            try {
+                var uris = yam_object.get_cover_items_by_size ((int) cover_size);
+                debug ("[CoverImage] got %d cover uris", uris.size);
+                foreach (var uri in uris) {
+                    if (uri == null) continue;
+                    string full_uri = uri;
+                    if (!full_uri.has_prefix ("http://") && !full_uri.has_prefix ("https://")) {
+                        full_uri = "https://" + full_uri;
+                    }
+                    debug ("[CoverImage] fetching %s", full_uri);
+                    image_bytes = yield Application.tape_client.yam_helper.load_image_data (full_uri);
+                    if (image_bytes != null) {
+                        debug ("[CoverImage] network fetch ok: %zu bytes", image_bytes.get_size ());
+                        break;
+                    }
+                }
+            } catch (Error e) {
+                warning ("CoverImage fallback load failed: %s", e.message);
+            }
+        }
         if (image_bytes != null) {
             try {
                 var loader = new Gdk.PixbufLoader ();
@@ -116,6 +144,8 @@ public sealed class Cassette.CoverImage : Gtk.Frame {
             stack.add_child (real_image);
 
             stack.visible_child = real_image;
+        } else {
+            debug ("[CoverImage] no pixbuf, leaving placeholder");
         }
     }
 }

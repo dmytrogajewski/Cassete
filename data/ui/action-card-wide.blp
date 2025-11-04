@@ -1,0 +1,32 @@
+using Gtk 4.0;
+
+template $CassetteActionCardWide: $CassetteActionCardCustom {
+  Box content_box {
+    orientation: horizontal;
+    spacing: 12;
+
+    $CassetteCoverImage cover_image {
+      cover-size: small;
+      image-widget-size: 72;
+    }
+
+    Box {
+      orientation: vertical;
+      spacing: 4;
+      hexpand: true;
+
+      Label title_label {
+        css-classes: ["heading", "title-2"]; 
+        halign: start;
+        wrap: true;
+      }
+
+      Label subtitle_label {
+        halign: start;
+        wrap: true;
+      }
+    }
+  }
+}
+
+

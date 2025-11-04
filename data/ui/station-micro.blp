@@ -1,7 +1,7 @@
 using Gtk 4.0;
 using Adw 1;
 
-template $CassetteAlbumMicro : Adw.Bin {
+template $CassetteStationMicro : Adw.Bin {
   hexpand: false;
   vexpand: false;
 
@@ -17,9 +17,10 @@ template $CassetteAlbumMicro : Adw.Bin {
         orientation: vertical;
         css-classes: ["action-card"]; 
 
-        $CassetteCoverImage cover_image {
-          cover-size: big;
-          image-widget-size: 200;
+        Image station_image {
+          icon-size: large;
+          width-request: 200;
+          height-request: 200;
         }
 
         Box {
@@ -27,26 +28,17 @@ template $CassetteAlbumMicro : Adw.Bin {
           spacing: 4;
           hexpand: true;
 
-          Label album_title {
-            label: _("Album");
+          Label station_title {
             justify: center;
             halign: center;
             wrap: true;
             wrap-mode: word_char;
             css-classes: ["heading"];
           }
-
-          Label album_artist {
-            label: _("Artist");
-            justify: center;
-            halign: center;
-            wrap: true;
-            wrap-mode: word_char;
-            css-classes: ["caption", "dim-label"];
-          }
         }
       }
     }
   }
 }
+
 

@@ -63,6 +63,8 @@ vala_sources = files(
   'widgets/buttons/menu/playlist-options-button.vala',
   'widgets/action-cards/custom.vala',
   'widgets/action-cards/station.vala',
+  'widgets/station-micro.vala',
+  'widgets/action-cards/wide.vala',
   'widgets/play-mark/play-mark-context.vala',
   'widgets/playlist-choose-dialog.vala',
   'widgets/playlist-row.vala',

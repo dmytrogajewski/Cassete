@@ -168,6 +168,8 @@
     <file preprocess="xml-stripblanks">ui/track-queue-content.ui</file>
     <file preprocess="xml-stripblanks">ui/action-card-custom.ui</file>
     <file preprocess="xml-stripblanks">ui/action-card-station.ui</file>
+    <file preprocess="xml-stripblanks">ui/station-micro.ui</file>
+    <file preprocess="xml-stripblanks">ui/action-card-wide.ui</file>
     <file preprocess="xml-stripblanks">ui/playlist-choose-dialog.ui</file>
     <file preprocess="xml-stripblanks">ui/playlist-row.ui</file>
     <file preprocess="xml-stripblanks">ui/headered-scrolled-window.ui</file>

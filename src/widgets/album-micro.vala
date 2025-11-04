@@ -22,6 +22,8 @@ public class Cassette.AlbumMicro : Adw.Bin {
     unowned Gtk.Label album_artist;
     [GtkChild]
     unowned Gtk.Button self;
+    [GtkChild]
+    unowned Gtk.Box card_box;
 
     public BaseView? collection_view { get; set; }
     public YaMAPI.Album? album_info { get; construct; default = null; }
@@ -36,6 +38,18 @@ public class Cassette.AlbumMicro : Adw.Bin {
 
     construct {
         if (album_info != null) {
+            // Add hover/active highlight like other action cards (apply to card_box)
+            var hover = new Gtk.EventControllerMotion ();
+            hover.enter.connect (() => { card_box.add_css_class ("action-card-hover"); });
+            hover.leave.connect (() => { card_box.remove_css_class ("action-card-hover"); });
+            self.add_controller (hover);
+
+            var press = new Gtk.GestureClick ();
+            press.pressed.connect (() => { card_box.add_css_class ("action-card-active"); });
+            press.released.connect (() => { card_box.remove_css_class ("action-card-active"); });
+            press.stopped.connect (() => { card_box.remove_css_class ("action-card-active"); });
+            self.add_controller (press);
+
             self.clicked.connect (() => {
                 if (collection_view != null && collection_view.root_view != null) {
                     collection_view.root_view.add_view (new AlbumView (album_info.id));
@@ -54,6 +68,7 @@ public class Cassette.AlbumMicro : Adw.Bin {
         }
 
         album_title.label = album_info.title;
+        debug ("[AlbumMicro] %s cover_uri=%s", album_info.title, album_info.cover_uri ?? "null");
 
         if (album_info.artists.size > 0) {
             var artist_names = new Gee.ArrayList<string> ();

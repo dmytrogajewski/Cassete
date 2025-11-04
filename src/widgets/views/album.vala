@@ -37,6 +37,8 @@ namespace Cassette {
         unowned LikeButton like_button;
         [GtkChild]
         unowned Gtk.Box main_box;
+        [GtkChild]
+        unowned Gtk.Button back_button;
 
         public override bool can_refresh { get; default = true; }
 
@@ -52,6 +54,12 @@ namespace Cassette {
         construct {
             track_list = new TrackList (scrolled_window.vadjustment);
             main_box.append (track_list);
+
+            back_button.clicked.connect (() => {
+                if (root_view != null) {
+                    root_view.backward ();
+                }
+            });
 
             play_button.clicked.connect (play_mark_context.trigger);
             play_mark_context.triggered_not_playing.connect (start_playing);

@@ -4,16 +4,20 @@ using Adw 1;
 template $CassetteSaveStack : Adw.Bin {
   width-request: 42;
   height-request: 42;
+  css-classes: ["save-stack-transparent"];
 
   Stack save_stack {
     width-request: 38;
     height-request: 38;
     halign: start;
     hexpand: true;
+    css-classes: ["transparent-background"];
 
     StackPage {
       name: "none";
-      child: Adw.Bin {};
+      child: Adw.Bin {
+        css-classes: ["transparent-background"];
+      };
     }
 
     StackPage {

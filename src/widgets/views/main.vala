@@ -41,9 +41,10 @@ public class Cassette.MainView : BaseView {
     Gtk.Box? new_releases_box = null;
     Gtk.ScrolledWindow? new_releases_scrolled = null;
     
-    // Waves section (discoveries) - now horizontal scrollable, not FlowBox
-    Gtk.Box? waves_box = null;
-    Gtk.ScrolledWindow? waves_scrolled = null;
+    // Waves section (discoveries) - tabbed with horizontal scrollable lists
+    Gtk.Box? waves_tabs_box = null;
+    Gtk.Stack? waves_stack = null;
+    Gee.HashMap<string, Gtk.Box> waves_boxes = new Gee.HashMap<string, Gtk.Box> ();
     
     // In-style section
     Gtk.Stack? in_style_stack = null;
@@ -108,7 +109,7 @@ public class Cassette.MainView : BaseView {
         tabs_notebook.show_border = false;
         
         tab_content_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 32);
-        tabs_notebook.append_page (tab_content_box, new Gtk.Label (_("Для вас")));
+        tabs_notebook.append_page (tab_content_box, new Gtk.Label (_("For you")));
         // Add Trends tab later if needed
         main_box.append (tabs_notebook);
 
@@ -116,7 +117,11 @@ public class Cassette.MainView : BaseView {
         var quick_access_section = new Adw.PreferencesGroup ();
         quick_access_section.title = ""; // No title, shown as list items
         
-        quick_access_list = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
+        quick_access_list = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 16);
+        quick_access_list.margin_start = 12;
+        quick_access_list.margin_end = 12;
+        quick_access_list.margin_top = 16;
+        quick_access_list.margin_bottom = 8;
         quick_access_section.add (quick_access_list);
         tab_content_box.append (quick_access_section);
 
@@ -139,23 +144,21 @@ public class Cassette.MainView : BaseView {
         new_releases_section.add (new_releases_scrolled);
         tab_content_box.append (new_releases_section);
 
-        // Create waves section (discoveries) - horizontal scrollable
+        // Create waves section (discoveries) - tabbed with horizontal scrollable lists
         var waves_section = new Adw.PreferencesGroup ();
         waves_section.title = _("More Discoveries");
         
-        waves_scrolled = new Gtk.ScrolledWindow ();
-        waves_scrolled.height_request = 200;
-        waves_scrolled.hscrollbar_policy = Gtk.PolicyType.AUTOMATIC;
-        waves_scrolled.vscrollbar_policy = Gtk.PolicyType.NEVER;
+        waves_tabs_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 8);
+        waves_tabs_box.margin_bottom = 12;
         
-        waves_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 12);
-        waves_box.margin_start = 12;
-        waves_box.margin_end = 12;
-        waves_box.margin_top = 12;
-        waves_box.margin_bottom = 12;
+        waves_stack = new Gtk.Stack ();
+        waves_stack.transition_type = Gtk.StackTransitionType.CROSSFADE;
         
-        waves_scrolled.child = waves_box;
-        waves_section.add (waves_scrolled);
+        var waves_container = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
+        waves_container.append (waves_tabs_box);
+        waves_container.append (waves_stack);
+        
+        waves_section.add (waves_container);
         tab_content_box.append (waves_section);
 
         // Create in-style section
@@ -198,14 +201,23 @@ public class Cassette.MainView : BaseView {
         }
         
         // Clear waves
-        if (waves_box != null) {
-            var children = waves_box.get_first_child ();
+        if (waves_tabs_box != null) {
+            var children = waves_tabs_box.get_first_child ();
             while (children != null) {
                 var next = children.get_next_sibling ();
-                waves_box.remove (children);
+                waves_tabs_box.remove (children);
                 children = next;
             }
         }
+        if (waves_stack != null) {
+            var children = waves_stack.get_first_child ();
+            while (children != null) {
+                var next = children.get_next_sibling ();
+                waves_stack.remove (children);
+                children = next;
+            }
+        }
+        waves_boxes.clear ();
         
         // Clear in-style
         if (in_style_stack != null) {
@@ -237,11 +249,51 @@ public class Cassette.MainView : BaseView {
 
         // Load quick access (Liked and History) - as list items
         try {
-            var liked_playlist = new YaMAPI.Playlist.liked ();
-            var liked_micro = new PlaylistMicro (this, liked_playlist);
-            quick_access_list.append (liked_micro);
+            // Load full liked playlist to get track count and proper cover
+            YaMAPI.Playlist? liked_full = null;
+            try {
+                liked_full = yield client.users_playlists_playlist ("3", false, yam_helper.me.uid);
+            } catch (Error e) {
+                debug ("Failed to load full liked playlist: %s", e.message);
+            }
+            var liked_playlist = liked_full ?? new YaMAPI.Playlist.liked ();
             
-            // History would go here if we have an endpoint
+            string liked_subtitle = liked_playlist.track_count > 0 ? liked_playlist.track_count.to_string () : "";
+            var liked_title_text = liked_playlist.title ?? _("Liked");
+            var liked_card = new ActionCardWide (liked_playlist, liked_title_text, liked_subtitle);
+            liked_card.hexpand = true;
+            liked_card.halign = Gtk.Align.FILL;
+            // Ensure labels are populated regardless of construct order
+            liked_card.update_title_label (liked_title_text);
+            liked_card.update_subtitle_label (liked_subtitle);
+            liked_card.clicked.connect (() => {
+                if (root_view != null) {
+                    root_view.add_view (new PlaylistView (liked_playlist.uid, liked_playlist.kind));
+                }
+            });
+            quick_access_list.append (liked_card);
+            
+            // Load History playlist
+            try {
+                var history_playlist = yield client.landing_block_premiere_recent_tracks ();
+                if (history_playlist != null) {
+                    var history_title_text = _("History");
+                    var history_sub_text = history_playlist.description;
+                    var history_card = new ActionCardWide (history_playlist, history_title_text, history_sub_text);
+                    history_card.hexpand = true;
+                    history_card.halign = Gtk.Align.FILL;
+                    history_card.update_title_label (history_title_text);
+                    history_card.update_subtitle_label (history_sub_text);
+                    history_card.clicked.connect (() => {
+                        if (root_view != null) {
+                            root_view.add_view (new PlaylistView (history_playlist.uid, history_playlist.kind));
+                        }
+                    });
+                    quick_access_list.append (history_card);
+                }
+            } catch (Error e) {
+                debug ("Failed to load history playlist: %s", e.message);
+            }
         } catch (Error e) {
             warning ("Failed to load quick access: %s", e.message);
         }
@@ -252,6 +304,7 @@ public class Cassette.MainView : BaseView {
             if (new_releases != null) {
                 foreach (var album in new_releases.get_albums ()) {
                     if (album != null) {
+                        debug ("[MainView] NewRelease album title=%s cover_uri=%s", album.title, album.cover_uri ?? "null");
                         var album_micro = new AlbumMicro (this, album);
                         new_releases_box.append (album_micro);
                     }
@@ -261,20 +314,60 @@ public class Cassette.MainView : BaseView {
             warning ("Failed to load new releases: %s", e.message);
         }
 
-        // Load waves (discoveries) - horizontal scrollable
+        // Load waves (discoveries) - tabbed with horizontal scrollable lists
         try {
             var waves = yield client.landing_blocks_waves ();
-            if (waves != null && waves.items != null) {
-                foreach (var wave_item in waves.items) {
-                    if (wave_item != null && wave_item.station_info != null) {
-                        var action_card = new ActionCardStation (wave_item.station_info);
-                        action_card.clicked.connect (() => {
-                            if (root_view != null) {
-                                root_view.add_view (new StationsView ());
-                            }
-                        });
-                        waves_box.append (action_card);
+            debug ("Loaded waves: %d groups, %d items", waves?.groups?.size ?? 0, waves?.items?.size ?? 0);
+            if (waves != null && waves.groups != null && waves.groups.size > 0) {
+                foreach (var group in waves.groups) {
+                    if (group.items.size == 0) continue;
+                    
+                    // Create tab button for this group
+                    var tab_button = new Gtk.ToggleButton ();
+                    tab_button.label = group.title;
+                    tab_button.group = null; // Will be grouped by Gtk
+                    
+                    // Create scrollable box for this group
+                    var scrolled = new Gtk.ScrolledWindow ();
+                    scrolled.height_request = 200;
+                    scrolled.hscrollbar_policy = Gtk.PolicyType.AUTOMATIC;
+                    scrolled.vscrollbar_policy = Gtk.PolicyType.NEVER;
+                    
+                    var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 12);
+                    box.margin_start = 12;
+                    box.margin_end = 12;
+                    box.margin_top = 12;
+                    box.margin_bottom = 12;
+                    
+                    scrolled.child = box;
+                    
+                    // Store box reference
+                    waves_boxes[group.id] = box;
+                    
+                    // Add items to box using station tiles (same visuals as albums)
+                    foreach (var wave_item in group.items) {
+                        if (wave_item != null && wave_item.station_info != null) {
+                            var station_tile = new StationMicro (this, wave_item.station_info);
+                            box.append (station_tile);
+                        }
                     }
+                    
+                    // Add to stack
+                    waves_stack.add_named (scrolled, group.id);
+                    
+                    // Connect tab button
+                    tab_button.toggled.connect (() => {
+                        if (tab_button.active && waves_stack != null) {
+                            waves_stack.visible_child_name = group.id;
+                        }
+                    });
+                    
+                    // Select first tab
+                    if (waves_tabs_box.get_first_child () == null) {
+                        tab_button.active = true;
+                    }
+                    
+                    waves_tabs_box.append (tab_button);
                 }
             }
         } catch (Error e) {
@@ -325,6 +418,7 @@ public class Cassette.MainView : BaseView {
                             if (tab.items != null) {
                                 foreach (var item in tab.items) {
                                     if (item.album != null) {
+                                        debug ("[MainView] InStyle tab=%s album title=%s cover_uri=%s", tab.title, item.album.title, item.album.cover_uri ?? "null");
                                         var album_micro = new AlbumMicro (this, item.album);
                                         albums_box.append (album_micro);
                                     }

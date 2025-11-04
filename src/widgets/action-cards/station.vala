@@ -69,8 +69,11 @@ public class Cassette.ActionCardStation : ActionCardCustom {
                     content_label.remove_css_class ("title-2");
                     content_label.add_css_class ("title-4");
                 }
-                // Make icon smaller for horizontal (shrinked) layout
-                content_image.icon_size = Gtk.IconSize.NORMAL;
+                // Make image/icon reasonably large for horizontal (shrinked) layout
+                content_image.icon_size = Gtk.IconSize.LARGE;
+                content_image.set_size_request (60, 60);
+                // Ensure card has a sensible minimum width in shrinked layout
+                set_size_request (220, -1);
             } else {
                 if (!content_label.has_css_class ("title-2")) {
                     content_label.add_css_class ("title-2");
@@ -78,6 +81,8 @@ public class Cassette.ActionCardStation : ActionCardCustom {
                 }
                 // Keep icon large for vertical layout
                 content_image.icon_size = Gtk.IconSize.LARGE;
+                content_image.set_size_request (-1, -1);
+                set_size_request (-1, -1);
             }
         }
     }
@@ -105,8 +110,17 @@ public class Cassette.ActionCardStation : ActionCardCustom {
         hexpand = false;
         vexpand = false;
 
+        // Apply generic action-card styling
+        add_css_class ("action-card");
+
         content_label.label = station_info.name;
-        content_image.icon_name = station_info.icon.get_internal_icon_name (station_info.id.normal);
+        
+        // Try to load image from full_image_url if available, otherwise use icon
+        if (station_info.full_image_url != null && station_info.full_image_url != "") {
+            load_image_from_url.begin ();
+        } else {
+            content_image.icon_name = station_info.icon.get_internal_icon_name (station_info.id.normal);
+        }
 
         // Set accessible name for screen readers based on station name
         // Note: Using tooltip for accessibility as accessible-label property is not available
@@ -145,6 +159,55 @@ public class Cassette.ActionCardStation : ActionCardCustom {
 
         clicked.connect (play_mark_context.trigger);
         play_mark_context.init_content (station_info.id.normal);
+    }
+    
+    async void load_image_from_url () {
+        if (station_info.full_image_url == null || station_info.full_image_url == "") {
+            // Fallback to icon if URL is empty
+            content_image.icon_name = station_info.icon.get_internal_icon_name (station_info.id.normal);
+            return;
+        }
+        
+        try {
+            // Ensure URI has https:// scheme
+            string full_uri = station_info.full_image_url;
+            if (!full_uri.has_prefix ("http://") && !full_uri.has_prefix ("https://")) {
+                full_uri = "https://" + full_uri;
+            }
+            
+            // Fetch image using yam_helper
+            var yam_helper = Application.tape_client.yam_helper;
+            var image_bytes = yield yam_helper.load_image_data (full_uri);
+            
+            if (image_bytes != null) {
+                try {
+                    var loader = new Gdk.PixbufLoader ();
+                    loader.write_bytes (image_bytes);
+                    loader.close ();
+                    var pixbuf = loader.get_pixbuf ();
+                    if (pixbuf != null) {
+                        content_image.set_from_paintable (Gdk.Texture.for_pixbuf (pixbuf));
+                        // Ensure reasonable size in shrinked/normal layouts
+                        if (is_shrinked) {
+                            content_image.set_size_request (60, 60);
+                        } else {
+                            content_image.set_size_request (120, 120);
+                        }
+                        return;
+                    }
+                } catch (Error e) {
+                    warning ("Failed to create pixbuf from image bytes: %s", e.message);
+                }
+            }
+        } catch (Error e) {
+            warning ("Failed to load image from URL %s: %s", station_info.full_image_url, e.message);
+        }
+        
+        // Fallback to icon if image loading failed
+        content_image.icon_name = station_info.icon.get_internal_icon_name (station_info.id.normal);
+        if (is_shrinked) {
+            content_image.set_size_request (60, 60);
+        }
     }
 }
 
