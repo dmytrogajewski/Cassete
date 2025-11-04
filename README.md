@@ -29,14 +29,9 @@ README language: \
 <div align="center"><h4>GTK4/Adwaita application that allows you to use Yandex Music service on Linux operating systems.</h4></div>
 
 <div align="center">
-  <video autoplay loop muted playsinline style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-    <source src="assets/demo.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-</div>
-
-<div align="center">
-  <img src="data/images/1-liked-view.png" alt="Preview"/>
+  <a href="https://github.com/dmytrogajewski/Cassete/raw/main/assets/demo.mp4">
+    <img src="https://img.shields.io/badge/▶️%20Watch%20Demo%20Video-blue?style=for-the-badge" alt="Watch Demo Video"/>
+  </a>
 </div>
 
 ## Install
