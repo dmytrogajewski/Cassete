@@ -45,6 +45,8 @@ vala_sources = files(
   'widgets/sidebar/childs/player-queue.vala',
   'widgets/sidebar/childs/wave-settings.vala',
   'widgets/loading-spinner.vala',
+  'widgets/wave-canvas.vala',
+  'widgets/vibe-canvas.vala',
   'widgets/abstract-reactable.vala',
   'widgets/lyrics/lyrics-line.vala',
   'widgets/lyrics/lyrics-panel.vala',
@@ -94,9 +96,14 @@ if get_option('with_webkit')
   vala_sources += files('widgets/webkit/webkit-auth.vala')
 endif
 
+c_sources = files(
+  'widgets/vibe-canvas-helper.c',
+)
+
 sources = [
   vapi_sources,
   vala_sources,
+  c_sources,
   blueprints,
   resources,
 ]
@@ -106,6 +113,20 @@ executable(
   sources,
   include_directories: config_h_dir,
   dependencies: dependencies,
-  link_args: ['-lm'],
+  link_args: ['-lm', '-lGL'],  # Math + OpenGL for Gtk.GLArea renderer
   install: true,
+)
+
+# Test shader program (minimal dependencies)
+gtk4_dep = dependency('gtk4')
+test_shader_deps = [gtk4_dep]
+
+executable(
+  'test-shader',
+  files('widgets/test-shader.vala'),
+  c_sources,
+  include_directories: config_h_dir,
+  dependencies: test_shader_deps,
+  link_args: ['-lm', '-lGL'],
+  install: false,
 )

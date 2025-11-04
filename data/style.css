@@ -33,6 +33,22 @@ flowbox flowboxchild {
     padding: 0px;
 }
 
+/* Disable button hover effects in micro widgets to prevent overlapping hover states */
+button.no-hover-effect {
+    background: none;
+    box-shadow: none;
+}
+
+button.no-hover-effect:hover {
+    background: none;
+    box-shadow: none;
+}
+
+button.no-hover-effect:active {
+    background: none;
+    box-shadow: none;
+}
+
 frame {
     border-style: none;
 }
@@ -210,4 +226,11 @@ overlaysplitview > box:last-child {
 .track-info-value {
     font-size: 1em;
     opacity: 1;
+}
+
+/**
+ * Vibe Canvas - My Wave animation
+ */
+vibecanvas {
+    /* size driven by container */
 }

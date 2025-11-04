@@ -2,41 +2,21 @@ using Gtk 4.0;
 using Adw 1;
 
 template $CassetteMainView : $CassetteBaseView {
-  Box {
-    orientation: vertical;
-    spacing: 24;
-
-    Adw.StatusPage status_page {
-      title: _("Welcome");
-      description: _("Select a station to start listening");
-      vexpand: true;
-      valign: center;
-    }
-
-    Adw.Clamp {
-      margin-top: 24;
-      margin-bottom: 24;
+  $CassetteHeaderedScrolledWindow scrolled_window {
+    body-widget: Adw.Clamp {
+      maximum-size: 1720;
+      margin-top: 12;
+      margin-bottom: 12;
       margin-start: 12;
       margin-end: 12;
-      maximum-size: 450;
 
-      Box {
-        orientation: vertical;
-        spacing: 4;
-
-        Button stations_view_button {
-          label: _("All stations");
-        }
-
-        Button playlists_view_button {
-          label: _("My playlists");
-        }
-
-        Button collection_button {
-          label: _("Collection");
+      Overlay main_overlay {
+        Box main_box {
+          orientation: vertical;
+          spacing: 32;
+          hexpand: true;
         }
       }
-    }
+    };
   }
 }
-

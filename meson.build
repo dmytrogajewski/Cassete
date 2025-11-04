@@ -70,6 +70,7 @@ gio_dep = dependency('gio-2.0', version: '>= ' + glib_min_version)
 libadwaita_dep = dependency('libadwaita-1', version: '>= 1.6')
 libapi_base_dep = dependency('libapi-base-4', fallback : ['libapi-base', 'lib_dep'])
 libtape_dep = dependency('libtape-0.2', fallback : ['libtape', 'lib_dep'])
+epoxy_dep = dependency('epoxy', required: true)
 
 if get_option('with_webkit')
   webkit_dep = dependency('webkitgtk-6.0')

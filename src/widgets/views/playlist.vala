@@ -53,6 +53,8 @@ namespace Cassette {
         unowned Gtk.Button edit_button;
         [GtkChild]
         unowned Gtk.Button remove_button;
+        [GtkChild]
+        unowned Gtk.Button back_button;
 
         public override bool can_refresh { get; default = true; }
 
@@ -65,6 +67,12 @@ namespace Cassette {
 
         construct {
             var yam_helper = Application.tape_client.yam_helper;
+
+            back_button.clicked.connect (() => {
+                if (root_view != null) {
+                    root_view.backward ();
+                }
+            });
 
             visibility_switch.state_set.connect (on_switch_change);
 

@@ -86,11 +86,27 @@ public class Cassette.TrackBase: TrackRow {
             { track_info.id }
         );
 
+        int track_index = track_list.index_of (track_info);
+        // If track not found by index_of (shouldn't happen, but safeguard),
+        // find it by ID to ensure we have a valid index
+        if (track_index == -1) {
+            for (int i = 0; i < track_list.size; i++) {
+                if (track_list[i].id == track_info.id) {
+                    track_index = i;
+                    break;
+                }
+            }
+            // If still not found, default to 0 (play first track)
+            if (track_index == -1 && track_list.size > 0) {
+                track_index = 0;
+            }
+        }
+
         player.start_track_list (
             track_list,
             get_context_type (yam_object),
             yam_object.oid,
-            track_list.index_of (track_info),
+            track_index,
             get_context_description (yam_object)
         );
     }
