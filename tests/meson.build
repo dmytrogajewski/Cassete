@@ -42,5 +42,46 @@ if get_option('tests')
   )
   
   test('Accessible names test infrastructure', accessible_names_test)
+
+  playlist_guards_src = configure_file(
+    input: '../src/widgets/views/playlist-guards.vala',
+    output: 'playlist-guards.vala',
+    copy: true
+  )
+
+  playlist_view_test = executable(
+    'playlist-view-test',
+    sources: [
+      'unit/playlist-view-test.vala',
+      playlist_guards_src,
+      '../src/config.vapi',
+    ],
+    dependencies: [
+      dependency('gio-2.0'),
+      dependency('gee-0.8'),
+      dependency('libtape-0.2', fallback : ['libtape', 'lib_dep']),
+    ],
+    include_directories: config_h_dir,
+    c_args: ['-w'],
+  )
+
+  test('Playlist view guard test', playlist_view_test)
+
+  audio_cache_test = executable(
+    'audio-cache-test',
+    sources: files(
+      'unit/audio-cache-test.vala',
+      '../src/config.vapi',
+    ),
+    dependencies: [
+      dependency('gio-2.0'),
+      dependency('gee-0.8'),
+      dependency('libtape-0.2', fallback : ['libtape', 'lib_dep']),
+    ],
+    include_directories: config_h_dir,
+    c_args: ['-w'],
+  )
+
+  test('Audio cache playback decoding', audio_cache_test)
 endif
 

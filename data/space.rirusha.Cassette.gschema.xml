@@ -54,6 +54,11 @@
 		<key name="default-pages-set" type="b">
 			<default>false</default>
 		</key>
+		<key name="custom-pages" type="as">
+			<default>[]</default>
+			<summary>Custom pages definition</summary>
+			<description>List of serialized custom pages created by the user.</description>
+		</key>
 		<key name="show-main" type="b">
 			<default>true</default>
 		</key>

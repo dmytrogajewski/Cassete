@@ -67,9 +67,15 @@ namespace Cassette {
 
             // Initialize high quality switch based on current music quality setting
             // High quality = NQ or LOSSLESS, Low quality = LQ
-            // Use Idle to ensure Settings binding has synced first
+            // Use Idle to ensure Settings binding has synced first, but guard the dialog lifetime
+            weak PreferencesDialog weak_self = this;
             Idle.add_once (() => {
-                is_hq_switch.active = tape_settings.music_quality != Tape.MusicQuality.LQ;
+                var self = weak_self;
+                if (self == null) {
+                    return;
+                }
+
+                self.update_hq_switch_from_settings ();
             });
 
             // Explicitly initialize switches from Settings before binding
@@ -130,6 +136,7 @@ namespace Cassette {
             );
 
             on_show_save_stack_switch_changed ();
+            update_hq_switch_from_settings ();
 
             if (Config.IS_DEVEL) {
                 add_css_class ("devel");
@@ -179,20 +186,44 @@ namespace Cassette {
                 return;
             }
 
-            var tape_settings = Application.tape_client.settings;
             is_updating_hq_switch = true;
 
-            if (is_hq_switch.active) {
-                // Switch ON: Use NQ (normal quality) as default high quality
-                tape_settings.music_quality = Tape.MusicQuality.NQ;
-                debug ("[TEST] Preferences toggle: HQ enabled");
-            } else {
-                // Switch OFF: Use LQ (low quality)
-                tape_settings.music_quality = Tape.MusicQuality.LQ;
+            var target_quality = is_hq_switch.active ?
+                Tape.MusicQuality.NQ :
+                Tape.MusicQuality.LQ;
+
+            Application.client_settings.set_enum (
+                "music-quality",
+                (int) target_quality
+            );
+
+            // Ensure immediate in-session update before bindings propagate back
+            var tape_settings = Application.tape_client.settings;
+            tape_settings.music_quality = target_quality;
+
+            if (target_quality == Tape.MusicQuality.LQ) {
                 debug ("[TEST] Preferences toggle: HQ disabled");
+            } else {
+                debug ("[TEST] Preferences toggle: HQ enabled");
             }
 
             is_updating_hq_switch = false;
+        }
+
+        void update_hq_switch_from_settings () {
+            var stored_quality = (Tape.MusicQuality) Application.client_settings.get_enum ("music-quality");
+            var tape_settings = Application.tape_client.settings;
+
+            is_updating_hq_switch = true;
+            if (tape_settings.music_quality != stored_quality) {
+                tape_settings.music_quality = stored_quality;
+            }
+
+            is_hq_switch.active = stored_quality != Tape.MusicQuality.LQ;
+            is_updating_hq_switch = false;
+            debug ("[TEST] Preferences HQ switch synced from settings: active=%s (quality=%s)",
+                is_hq_switch.active.to_string (),
+                stored_quality.to_string ());
         }
 
         void on_music_quality_changed () {
@@ -200,10 +231,8 @@ namespace Cassette {
                 return;
             }
 
+            update_hq_switch_from_settings ();
             var tape_settings = Application.tape_client.settings;
-            is_updating_hq_switch = true;
-            is_hq_switch.active = tape_settings.music_quality != Tape.MusicQuality.LQ;
-            is_updating_hq_switch = false;
             debug ("[TEST] Preferences music quality changed: quality=%s", tape_settings.music_quality.to_string ());
         }
 
@@ -241,3 +270,4 @@ namespace Cassette {
         }
     }
 }
+

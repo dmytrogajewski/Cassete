@@ -186,8 +186,35 @@ namespace Cassette {
 
         [GtkCallback]
         void on_add_page_button_clicked () {
-            // TODO: Implement custom page addition
-            debug ("[TEST] PlaylistView add page button clicked (not implemented)");
+            var playlist_info = object_info as YaMAPI.Playlist;
+            var app = (Application?) GLib.Application.get_default ();
+            var window = app?.active_window as Window;
+
+            if (playlist_info == null) {
+                window?.show_message (_("Playlist data is not loaded yet"));
+                debug ("[TEST] PlaylistView add page ignored: playlist_info is null");
+                return;
+            }
+
+            string playlist_uid = playlist_info.uid ?? uid ?? "";
+            string playlist_kind = playlist_info.kind ?? kind;
+
+            if (playlist_uid == "" || playlist_kind == "") {
+                window?.show_message (_("Unable to add playlist to custom pages"));
+                debug ("[TEST] PlaylistView add page failed: uid or kind missing");
+                return;
+            }
+
+            var page_info = new PageInfo ();
+            page_info.id = @"playlist:%s:%s".printf (playlist_uid, playlist_kind);
+            page_info.title = playlist_info.title ?? _("Playlist");
+            page_info.icon_name = "audio-x-generic-symbolic";
+            page_info.view_type_name = typeof (PlaylistView).name ();
+            page_info.args = { playlist_uid, playlist_kind };
+
+            CustomPagesStore.upsert (page_info);
+            window?.show_message (_("Playlist added to custom pages"));
+            debug ("[TEST] PlaylistView add page completed: id=%s", page_info.id);
         }
 
         [GtkCallback]
@@ -227,7 +254,11 @@ namespace Cassette {
         }
 
         void set_values () {
-            var playlist_info = object_info as YaMAPI.Playlist;
+            var playlist_info = PlaylistGuards.ensure_playlist_info (object_info);
+
+            if (playlist_info == null) {
+                return;
+            }
             var yam_helper = Application.tape_client.yam_helper;
 
             if (playlist_info.owner.uid == yam_helper.me.oid && playlist_info.kind != "3") {
@@ -353,7 +384,7 @@ namespace Cassette {
                 return;
             }
 
-            set_values ();
+            yield base.first_show ();
             debug ("[TEST] PlaylistView first_show without preload");
         }
 

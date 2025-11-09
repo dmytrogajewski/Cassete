@@ -12,14 +12,12 @@
 using Tape;
 
 namespace Cassette {
-    //
-    // For now, this is a placeholder that matches the old structure
-    public struct PageInfo {
-        public string id;
-        public string title;
-        public string icon_name;
-        public string view_type_name;
-        public string?[] args;
+    public class PageInfo : Object {
+        public string id { get; set; default = ""; }
+        public string title { get; set; default = ""; }
+        public string icon_name { get; set; default = ""; }
+        public string view_type_name { get; set; default = ""; }
+        public string?[] args { get; set; default = {}; }
     }
 
     [GtkTemplate (ui = "/space/rirusha/Cassette/ui/custom-page-preferences.ui")]
@@ -29,14 +27,43 @@ namespace Cassette {
         [GtkChild]
         unowned Gtk.Entry page_icon_name_entry;
 
-        public string page_id { get; construct; }
-        public string page_title { get; construct; }
-        public string page_icon_name { get; construct; }
+        PageInfo page_info;
+
+        public string page_id {
+            get {
+                return page_info.id;
+            }
+        }
+
+        public string page_title {
+            get {
+                return page_info.title;
+            }
+        }
+
+        public string page_icon_name {
+            get {
+                return page_info.icon_name;
+            }
+        }
+
+        public string view_type_name {
+            get {
+                return page_info.view_type_name;
+            }
+        }
+
+        public string?[] args {
+            get {
+                return page_info.args;
+            }
+        }
 
         public signal void deleted (CustomPagePreferences sender);
+        public signal void updated (CustomPagePreferences sender, PageInfo info);
 
         public CustomPagePreferences (PageInfo page_info) {
-            Object (page_id: page_info.id, page_title: page_info.title, page_icon_name: page_info.icon_name);
+            this.page_info = page_info;
         }
 
         construct {
@@ -46,25 +73,50 @@ namespace Cassette {
 
         [GtkCallback]
         void on_page_save_button_clicked () {
-            // TODO: Implement page save functionality
-            // if (page_title != page_title_entry.text || page_icon_name != page_icon_name_entry.text) {
-            //     var app = (Application?) GLib.Application.get_default ();
-            //     var window = app?.active_window as Window;
-            //     if (window != null) {
-            //         // window.page_root.update_page (page_id, page_title_entry.text, page_icon_name_entry.text);
-            //     }
-            // }
+            string new_title = page_title_entry.text.strip ();
+            string new_icon_name = page_icon_name_entry.text.strip ();
+
+            if (new_title.length == 0) {
+                show_feedback (_("Page title can't be empty"));
+                page_title_entry.text = page_title;
+                return;
+            }
+
+            bool changed = (new_title != page_title) || (new_icon_name != page_icon_name);
+
+            if (!changed) {
+                show_feedback (_("No changes to save"));
+                return;
+            }
+
+            page_info.title = new_title;
+            page_info.icon_name = new_icon_name;
+
+            updated (this, page_info);
         }
 
         [GtkCallback]
         void on_page_remove_button_clicked () {
             deleted (this);
-            // TODO: Implement page removal functionality
-            // var app = (Application?) GLib.Application.get_default ();
-            // var window = app?.active_window as Window;
-            // if (window != null) {
-            //     // window.page_root.remove_page (page_id);
-            // }
+        }
+
+        public PageInfo to_page_info () {
+            return page_info;
+        }
+
+        void show_feedback (string message) {
+            var app = (Application?) GLib.Application.get_default ();
+            if (app == null) {
+                debug ("[TEST] CustomPagePreferences feedback skipped: %s", message);
+                return;
+            }
+
+            var window = app.active_window as Window;
+            if (window != null) {
+                window.show_message (message);
+            } else {
+                debug ("[TEST] CustomPagePreferences feedback: %s", message);
+            }
         }
     }
 }

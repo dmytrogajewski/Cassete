@@ -191,4 +191,17 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
             return sidebar;
         }
     }
+
+    void close_windows_of_type (Type gtype) {
+        var app = get_application ();
+        if (app == null) {
+            return;
+        }
+
+        foreach (var win in app.get_windows ()) {
+            if (win.get_type ().is_a (gtype)) {
+                win.close ();
+            }
+        }
+    }
 }

@@ -20,81 +20,81 @@ This document covers an end-to-end manual regression suite for the Cassette desk
 
 | Step | Action | Expected UI | Expected Logs |
 |------|--------|-------------|---------------|
-| A1 | Launch the application. | Splash/auth stack appears. | `[TEST] Application startup complete`, `[TEST] Auth construct: initiating auto login` |
-| A2 | Allow automatic login to complete. | Main window loads (or auth form if token missing). | Success path: `[TEST] Auth success`, `[TEST] Auth transitioned to main content`<br>Failure path: `[TEST] Auth failed: ...`, `[TEST] Auth transitioned to login form` |
-| A3 | From the hamburger menu choose “Log out”. | Logout dialog appears. | `[TEST] Log out action triggered`, `[TEST] Auth logout dialog opened` |
-| A4 | Confirm the logout dialog. | App quits after data wipe. | `[TEST] Auth logout confirmed`, `[TEST] Auth force logout initiated`, `[TEST] Auth user data cleared and application quit` |
-| A5 | Relaunch and submit an invalid token. | Error toast (“Failed to login…”) shown. | `[TEST] Auth token submit clicked`, `[TEST] Auth failed: init returned false` |
-| A6 | Open the token documentation link. | Browser opens documentation page. | `[TEST] Auth token help link opened` |
-| A7 | (If built with WebKit) open Yandex login dialog. | WebView dialog appears. | `[TEST] Auth WebKit dialog opened` |
-| A8 | Provide a valid token and authenticate. | Main view displayed; player bar ready. | `[TEST] Auth token submit clicked`, `[TEST] Auth success`, `[TEST] Auth transitioned to main content` |
+| A1 | In a terminal run `env G_MESSAGES_DEBUG=all make run` (or launch the debug build) to start Cassette. | Splash/auth stack appears. | `[TEST] Application startup complete`, `[TEST] Auth construct: initiating auto login` |
+| A2 | Hands off the mouse/keyboard and wait for the splash screen to resolve. | Main window loads (or auth form if token missing). | Success path: `[TEST] Auth success`, `[TEST] Auth transitioned to main content`<br>Failure path: `[TEST] Auth failed: ...`, `[TEST] Auth transitioned to login form` |
+| A3 | Click the primary menu (three-line “hamburger” button in the header) → choose **Log out**. | Logout dialog appears. | `[TEST] Log out action triggered`, `[TEST] Auth logout dialog opened` |
+| A4 | In the dialog press the **Log out** destructive button. | App quits after data wipe. | `[TEST] Auth logout confirmed`, `[TEST] Auth force logout initiated`, `[TEST] Auth user data cleared and application quit` |
+| A5 | Relaunch, paste an intentionally invalid token into the “Yandex Music token” field, then click **Apply**. | Error toast (“Failed to login…”) shown. | `[TEST] Auth token submit clicked`, `[TEST] Auth failed: init returned false` |
+| A6 | Still on the auth form, click the info icon button next to the token entry (tooltip “How to obtain token”). | Browser opens documentation page. | `[TEST] Auth token help link opened` |
+| A7 | If the build includes WebKit, click **Login with Yandex account** in the auth list. | WebView dialog appears. | `[TEST] Auth WebKit dialog opened` |
+| A8 | Either finish the WebKit auth flow or paste a valid token, then click **Apply** to enter the main view. | Main view displayed; player bar ready. | `[TEST] Auth token submit clicked`, `[TEST] Auth success`, `[TEST] Auth transitioned to main content` |
 
 ### 2. Global UI & Navigation
 
 | Step | Action | Expected UI | Expected Logs |
 |------|--------|-------------|---------------|
-| B1 | Toggle the search button in the header. | Search entry replaces title. | `[TEST] Search toggle changed: active=true` |
-| B2 | Type a single letter. | Empty state displayed. | `[TEST] Search entry changed: ...`, `[TEST] SearchView query too short:` |
-| B3 | Enter a full query (≥2 chars). | Track results list shows. | `[TEST] SearchView executing query:`, `[TEST] SearchView result count:`, `[TEST] SearchView populated results` |
-| B4 | Clear the search field and toggle off. | Return to previous page title. | `[TEST] Search toggle changed: active=false` |
-| B5 | Open preferences from the menu. | Preferences dialog opens. | `[TEST] Preferences dialog opened`, `[TEST] Preferences dialog constructed` |
-| B6 | Launch the help overlay. | GNOME help overlay shows. | `[TEST] Help overlay opened` |
-| B7 | Open the about dialog. | About window appears. | `[TEST] About dialog opened` |
-| B8 | Trigger “Show authentication” (developer menu). | Auth stack pushes on top. | `[TEST] Window show_auth invoked`, `[TEST] Auth transitioned to login form` |
+| B1 | Click the magnifier/search toggle button in the top header (left of the title). | Search entry replaces title. | `[TEST] Search toggle changed: active=true` |
+| B2 | With the search entry focused, type a single character (for example `a`). | Empty state displayed. | `[TEST] Search entry changed: ...`, `[TEST] SearchView query too short:` |
+| B3 | Continue typing until the query has at least two characters (e.g. `apocalypse`). | Track results list shows. | `[TEST] SearchView executing query:`, `[TEST] SearchView result count:`, `[TEST] SearchView populated results` |
+| B4 | Press Backspace repeatedly to clear the field, then click the search toggle button again to close it. | Return to previous page title. | `[TEST] Search toggle changed: active=false` |
+| B5 | Open the primary menu → choose **Preferences**. | Preferences dialog opens. | `[TEST] Preferences dialog opened`, `[TEST] Preferences dialog constructed` |
+| B6 | Press `Ctrl+?` or open the primary menu → **Keyboard Shortcuts**. | GNOME help overlay shows. | `[TEST] Help overlay opened` |
+| B7 | Open the primary menu → choose **About**. | About window appears. | `[TEST] About dialog opened` |
+| B8 | Open the primary/overflow menu → choose **Show authentication** (visible in devel builds). | Auth stack pushes on top. | `[TEST] Window show_auth invoked`, `[TEST] Auth transitioned to login form` |
 
 ### 3. Home View & Discovery
 
 | Step | Action | Expected UI | Expected Logs |
 |------|--------|-------------|---------------|
-| C1 | Wait for the home page to load after login. | Content sections render. | `[TEST] MainView set_values_async start`, `[TEST] MainView added liked quick access card`, `[TEST] MainView added history quick access card`, `[TEST] MainView show_ready emitted` |
-| C2 | Press the “Моя волна” play button. | Player switches to My Wave. | `[TEST] My Wave play button clicked: starting station flow`, `[TEST] PlayerBar mode initialized: mode=...` |
-| C3 | Press “Настроить”. | Stations view opens. | `[TEST] My Wave settings button clicked: navigating to StationsView`, `[TEST] PageRoot add_view: view=Cassette.StationsView` |
-| C4 | Activate the History quick access card. | Playlist view opens. | `[TEST] History card clicked: playlist=...`, `[TEST] PageRoot add_view: view=Cassette.PlaylistView` |
-| C5 | Activate the Liked quick access card. | Playlist view opens (API fetch). | `[TEST] Liked card clicked: uid=...`, `[TEST] PlaylistView construct start: ...` |
-| C6 | Switch between Waves tabs. | Carousel updates. | `[TEST] Waves tab toggled: group_id=` |
-| C7 | Switch between In-Style tabs. | Carousel updates. | `[TEST] In-style tab toggled: tab_id=` |
+| C1 | After reaching the main view, do not interact until the home sections fully populate. | Content sections render. | `[TEST] MainView set_values_async start`, `[TEST] MainView added liked quick access card`, `[TEST] MainView added history quick access card`, `[TEST] MainView show_ready emitted` |
+| C2 | In the “Моя волна” card at the top, click the play triangle button. | Player switches to My Wave. | `[TEST] My Wave play button clicked: starting station flow`, `[TEST] PlayerBar mode initialized: mode=...` |
+| C3 | On the same card, click **Настроить** (gear icon) to open the settings. | Stations view opens. | `[TEST] My Wave settings button clicked: navigating to StationsView`, `[TEST] PageRoot add_view: view=Cassette.StationsView` |
+| C4 | Back on the home grid, click the **History** quick access tile. | Playlist view opens. | `[TEST] History card clicked: playlist=...`, `[TEST] PageRoot add_view: view=Cassette.PlaylistView` |
+| C5 | Click the **Liked** quick access tile below the home hero section. | Playlist view opens (API fetch). | `[TEST] Liked card clicked: uid=...`, `[TEST] PlaylistView construct start: ...` |
+| C6 | In the Waves carousel, click a different tab chip to the right. | Carousel updates. | `[TEST] Waves tab toggled: group_id=` |
+| C7 | In the In-Style section, select another tab chip. | Carousel updates. | `[TEST] In-style tab toggled: tab_id=` |
 
 ### 4. Stations & Search Flows
 
 | Step | Action | Expected UI | Expected Logs |
 |------|--------|-------------|---------------|
-| D1 | Back from Stations view. | Return to previous stack. | `[TEST] StationsView back button clicked`, `[TEST] PageRoot backward triggered` |
-| D2 | Use the Stations search box with a matching query. | Search results list appears. | `[TEST] StationsView search changed: query=...`, `[TEST] StationsView search results visible: count=` |
-| D3 | Search for an unknown station. | “No results” pane shown. | `[TEST] StationsView search no results` |
-| D4 | Start any station tile. | Station starts playing. | `[TEST] Station card trigger: station_id=` |
-| D5 | In the header search box, submit a known track query. | Search results update live. | `[TEST] SearchView update completed` |
+| D1 | Click the arrow/back button in the Stations header. | Return to previous stack. | `[TEST] StationsView back button clicked`, `[TEST] PageRoot backward triggered` |
+| D2 | In Stations, type a known station name into the search entry and pause. | Search results list appears. | `[TEST] StationsView search changed: query=...`, `[TEST] StationsView search results visible: count=` |
+| D3 | Clear the field and type gibberish (e.g. `zzzzz`). | “No results” pane shown. | `[TEST] StationsView search no results` |
+| D4 | Click any station tile in the results grid. | Station starts playing. | `[TEST] Station card trigger: station_id=` |
+| D5 | Focus the global header search and submit a known track query to confirm updates. | Search results update live. | `[TEST] SearchView update completed` |
 
 ### 5. Library Views (Playlists, Albums, Collection)
 
 | Step | Action | Expected UI | Expected Logs |
 |------|--------|-------------|---------------|
-| E1 | From History playlist, press Back. | Return to previous view. | `[TEST] PlaylistView back button clicked`, `[TEST] PageRoot backward triggered` |
-| E2 | Toggle playlist visibility. | Notification toast shown. | `[TEST] PlaylistView visibility toggle clicked`, `[TEST] PlaylistView visibility set to ...` |
-| E3 | Press the playlist play button. | Player starts playlist queue. | `[TEST] PlaylistView play button clicked`, `[TEST] PlayerBar mode initialized:` |
-| E4 | Start saving a playlist, then abort. | Save progress starts then cancels. | `[TEST] PlaylistView save button clicked`, `[TEST] PlaylistView abort saving clicked` |
-| E5 | Delete cached playlist data (delete icon). | Playlist cache cleared. | `[TEST] PlaylistView delete from cache clicked` |
-| E6 | Delete a playlist (if allowed). | Playlist removed; navigation pops. | `[TEST] PlaylistView remove button clicked`, `[TEST] PlaylistView delete confirmed`, `[TEST] PlaylistView delete completed` |
-| E7 | Open an album from any album tile. | Album view appears. | `[TEST] AlbumMicro clicked: album_id=...`, `[TEST] PageRoot add_view: view=Cassette.AlbumView`, `[TEST] AlbumView set_values applied` |
-| E8 | Start album playback. | Player switches to album tracklist. | `[TEST] AlbumView play button clicked`, `[TEST] AlbumView start playing: tracks=` |
-| E9 | Open the Collection section (sidebar). | Collection view with sections. | `[TEST] CollectionView load complete`, `[TEST] CollectionView set_values` |
-| E10 | Open a liked playlist from Collection. | Playlist view opens. | `[TEST] LikedPlaylistMicro clicked: uid=..., kind=...` |
+| E1 | While viewing the History playlist, click the back arrow in the header. | Return to previous view. | `[TEST] PlaylistView back button clicked`, `[TEST] PageRoot backward triggered` |
+| E2 | In the playlist header, toggle the visibility switch (eye icon). | Notification toast shown. | `[TEST] PlaylistView visibility toggle clicked`, `[TEST] PlaylistView visibility set to ...` |
+| E3 | Click the **Play** button next to the playlist title. | Player starts playlist queue. | `[TEST] PlaylistView play button clicked`, `[TEST] PlayerBar mode initialized:` |
+| E4 | Click **Save** (cloud icon), wait for progress to begin, then click **Abort**. | Save progress starts then cancels. | `[TEST] PlaylistView save button clicked`, `[TEST] PlaylistView abort saving clicked` |
+| E5 | Click the trash/delete-from-cache icon in the playlist toolbar. | Playlist cache cleared. | `[TEST] PlaylistView delete from cache clicked` |
+| E6 | If enabled, use the drop-down menu (three dots) → **Delete playlist**, then confirm. | Playlist removed; navigation pops. | `[TEST] PlaylistView remove button clicked`, `[TEST] PlaylistView delete confirmed`, `[TEST] PlaylistView delete completed` |
+| E7 | From any album grid, click an album tile cover. | Album view appears. | `[TEST] AlbumMicro clicked: album_id=...`, `[TEST] PageRoot add_view: view=Cassette.AlbumView`, `[TEST] AlbumView set_values applied` |
+| E8 | Inside the album view, click the **Play** button beneath the title. | Player switches to album tracklist. | `[TEST] AlbumView play button clicked`, `[TEST] AlbumView start playing: tracks=` |
+| E9 | Open the sidebar (if hidden) and click **Collection**. | Collection view with sections. | `[TEST] CollectionView load complete`, `[TEST] CollectionView set_values` |
+| E10 | Under Collection, click any liked playlist card. | Playlist view opens. | `[TEST] LikedPlaylistMicro clicked: uid=..., kind=...` |
 
 ### 6. Player Controls, Sidebar & Sharing
 
 | Step | Action | Expected UI | Expected Logs |
 |------|--------|-------------|---------------|
-| F1 | Tap Play/Pause shortcut (space). | Playback toggles. | `[TEST] Play/Pause action toggled` |
-| F2 | Tap Next/Previous (Alt+→ / Alt+←). | Player moves to adjacent tracks. | `[TEST] Next track action triggered`, `[TEST] Previous track action triggered` |
-| F3 | Toggle Shuffle/Repeat from player bar. | Buttons reflect new mode. | `[TEST] Shuffle action triggered`, `[TEST] PlayerBar shuffle mode: ...`, `[TEST] Repeat action triggered`, `[TEST] PlayerBar repeat mode: ...` |
-| F4 | Open queue sidebar. | Sidebar displays queue. | `[TEST] PlayerBar queue panel requested`, `[TEST] Sidebar showing queue` |
-| F5 | Close queue sidebar. | Sidebar hidden. | `[TEST] PlayerBar queue panel toggled off`, `[TEST] Sidebar close invoked` |
-| F6 | Open track details sidebar. | Track info appears. | `[TEST] PlayerBar track details requested`, `[TEST] Sidebar showing track info:` |
-| F7 | Toggle wave settings (during My Wave playback). | Wave panel opens/closes. | `[TEST] PlayerBar wave settings requested`, `[TEST] Sidebar showing wave settings` |
-| F8 | Drag the playback slider. | Seek to new position. | `[TEST] PlayerBar slider moved: value=` |
-| F9 | Adjust volume via button popover. | Volume/mute updates. | `[TEST] VolumeButton scale change:`, `[TEST] VolumeButton volume setter:` |
-| F10 | Toggle mute (`Ctrl+M` or button). | Mute icon changes. | `[TEST] Mute action toggled: mute=` or `[TEST] VolumeButton mute toggled:` |
-| F11 | Trigger “Share current track”. | Success toast (if non-UGC). | `[TEST] Share current track action triggered:` _or_ `[TEST] Share current track action blocked: current track is UGC` |
-| F12 | Parse clipboard URL via shortcut (`Ctrl+Shift+V`). | Album/playlist opens. | `[TEST] Parse URL action triggered`, follow-up lines for success or failures |
+| F1 | Press the space bar (player must have a track loaded). | Playback toggles. | `[TEST] Play/Pause action toggled` |
+| F2 | With playback active, press `Alt+→` then `Alt+←`. | Player moves to adjacent tracks. | `[TEST] Next track action triggered`, `[TEST] Previous track action triggered` |
+| F3 | Click the shuffle and repeat icons in the player bar to toggle each state. | Buttons reflect new mode. | `[TEST] Shuffle action triggered`, `[TEST] PlayerBar shuffle mode: ...`, `[TEST] Repeat action triggered`, `[TEST] PlayerBar repeat mode: ...` |
+| F4 | Click the queue button (list icon) in the player bar. | Sidebar displays queue. | `[TEST] PlayerBar queue panel requested`, `[TEST] Sidebar showing queue` |
+| F5 | Click the close/back button on the sidebar header. | Sidebar hidden. | `[TEST] PlayerBar queue panel toggled off`, `[TEST] Sidebar close invoked` |
+| F6 | Click the track info button (ℹ icon) in the player bar. | Track info appears. | `[TEST] PlayerBar track details requested`, `[TEST] Sidebar showing track info:` |
+| F7 | While My Wave is playing, click the wave settings button (slider icon). | Wave panel opens/closes. | `[TEST] PlayerBar wave settings requested`, `[TEST] Sidebar showing wave settings` |
+| F8 | Click and drag the position slider in the player. | Seek to new position. | `[TEST] PlayerBar slider moved: value=` |
+| F9 | Click the volume button, adjust the popover slider, then close it. | Volume/mute updates. | `[TEST] VolumeButton scale change:`, `[TEST] VolumeButton volume setter:` |
+| F10 | Press `Ctrl+M` or click the mute icon in the volume popover. | Mute icon changes. | `[TEST] Mute action toggled: mute=` or `[TEST] VolumeButton mute toggled:` |
+| F11 | Click the share icon in the player bar. | Success toast (if non-UGC). | `[TEST] Share current track action triggered:` _or_ `[TEST] Share current track action blocked: current track is UGC` |
+| F12 | Copy a Yandex Music URL, then press `Ctrl+Shift+V` inside Cassette. | Album/playlist opens. | `[TEST] Parse URL action triggered`, follow-up lines for success or failures |
 
 ### 7. Preferences & Cache Management
 
