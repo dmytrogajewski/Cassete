@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -27,27 +27,9 @@ public class Cassette.CacheIndicator : Adw.Bin {
         }
 
         construct {
-            jobs_popover.notify["visible"].connect (() => {
-                while (jobs_box.get_last_child () != null) {
-                    jobs_box.remove (jobs_box.get_last_child ());
-                }
+            jobs_popover.notify.connect (on_jobs_popover_notify);
 
-                if (jobs_popover.visible) {
-                    fill_box ();
-                }
-            });
-
-            indicator_revealer.notify["reveal-child"].connect (() => {
-                if (indicator_revealer.reveal_child) {
-                    indicator_revealer.visible = true;
-                }
-            });
-
-            indicator_revealer.notify["child-revealed"].connect (() => {
-                if (!indicator_revealer.child_revealed) {
-                    indicator_revealer.visible = false;
-                }
-            });
+            indicator_revealer.notify.connect (on_indicator_revealer_notify);
 
             jobs_icon.set_draw_func (update_jobs_icon);
 
@@ -66,6 +48,30 @@ public class Cassette.CacheIndicator : Adw.Bin {
             //     jobs_icon.queue_draw ();
             //     update_indicator_visibility ();
             // });
+        }
+
+        void on_jobs_popover_notify (ParamSpec pspec) {
+            if (pspec.name == "visible") {
+                while (jobs_box.get_last_child () != null) {
+                    jobs_box.remove (jobs_box.get_last_child ());
+                }
+
+                if (jobs_popover.visible) {
+                    fill_box ();
+                }
+            }
+        }
+
+        void on_indicator_revealer_notify (ParamSpec pspec) {
+            if (pspec.name == "reveal-child") {
+                if (indicator_revealer.reveal_child) {
+                    indicator_revealer.visible = true;
+                }
+            } else if (pspec.name == "child-revealed") {
+                if (!indicator_revealer.child_revealed) {
+                    indicator_revealer.visible = false;
+                }
+            }
         }
 
         //
@@ -143,4 +149,3 @@ public class Cassette.CacheIndicator : Adw.Bin {
             cairo.fill ();
         }
     }
-

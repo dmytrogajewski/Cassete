@@ -27,16 +27,20 @@ namespace Cassette {
 
         construct {
             set_draw_func (draw_waves);
-            
+
             // Start animation when mapped
-            map.connect (() => {
-                start_animation ();
-            });
-            
+            map.connect (on_map);
+
             // Stop animation when unmapped
-            unmap.connect (() => {
-                stop_animation ();
-            });
+            unmap.connect (on_unmap);
+        }
+
+        void on_map () {
+            start_animation ();
+        }
+
+        void on_unmap () {
+            stop_animation ();
         }
 
         void start_animation () {
@@ -44,11 +48,13 @@ namespace Cassette {
                 return;
             }
 
-            animation_timeout = Timeout.add (16, () => { // ~60 FPS
-                animation_time += WAVE_SPEED;
-                queue_draw ();
-                return true;
-            });
+            animation_timeout = Timeout.add (16, on_animation_tick); // ~60 FPS
+        }
+
+        bool on_animation_tick () {
+            animation_time += WAVE_SPEED;
+            queue_draw ();
+            return true;
         }
 
         void stop_animation () {
@@ -69,30 +75,30 @@ namespace Cassette {
             cairo.set_operator (Cairo.Operator.CLEAR);
             cairo.paint ();
             cairo.set_operator (Cairo.Operator.OVER);
-            
+
             // Get color for waves
             var color = get_color ();
 
             // Draw animated waves
             cairo.set_line_width (2.0);
-            
+
             for (int i = 0; i < WAVE_COUNT; i++) {
                 var wave_offset = animation_time + (i * Math.PI / WAVE_COUNT);
                 var alpha = 0.3 + (i * 0.1);
                 alpha = double.min (1.0, alpha);
-                
+
                 cairo.set_source_rgba (color.red, color.green, color.blue, (float) alpha);
-                
+
                 cairo.move_to (0, height / 2.0);
-                
+
                 for (int x = 0; x < width; x += 2) {
-                    var y = height / 2.0 + 
+                    var y = height / 2.0 +
                             WAVE_AMPLITUDE * Math.sin ((x / 50.0) + wave_offset) +
                             (WAVE_AMPLITUDE * 0.5) * Math.sin ((x / 100.0) + wave_offset * 1.5);
-                    
+
                     cairo.line_to (x, y);
                 }
-                
+
                 cairo.stroke ();
             }
         }

@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -205,9 +205,13 @@ public class Cassette.TrackInfoPanel : Adw.Bin, Gtk.Orientable {
     }
 
     construct {
-        notify["position"].connect (() => {
+        notify.connect (on_track_info_panel_notify);
+    }
+
+    void on_track_info_panel_notify (ParamSpec pspec) {
+        if (pspec.name == "position") {
             position_label.label = position.to_string ();
-        });
+        }
     }
 
     void update_labels_visibility () {
@@ -231,4 +235,3 @@ public class Cassette.TrackInfoPanel : Adw.Bin, Gtk.Orientable {
         cover_stack.visible_child_name = "position";
     }
 }
-

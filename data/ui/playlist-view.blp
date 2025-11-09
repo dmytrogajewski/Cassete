@@ -1,0 +1,241 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassettePlaylistView : $CassetteCachiableView {
+  download-stack: "save_buttons_stack";
+
+  child: ScrolledWindow scrolled_window {
+    hexpand: true;
+    propagate-natural-height: true;
+    hscrollbar-policy: never;
+
+    child: Adw.Clamp {
+      hexpand: true;
+      margin-top: 16;
+      margin-bottom: 16;
+      margin-start: 16;
+      margin-end: 16;
+      maximum-size: 1000;
+
+      child: Box main_box {
+        hexpand: true;
+        orientation: vertical;
+        spacing: 16;
+
+        Box {
+          orientation: horizontal;
+          spacing: 12;
+          margin-bottom: 8;
+
+          Button back_button {
+            css-classes: ["flat"];
+            icon-name: "go-previous-symbolic";
+            tooltip-text: _("Go back");
+            halign: start;
+            valign: center;
+            clicked => $on_back_button_clicked();
+          }
+        }
+
+        Box {
+          valign: center;
+          vexpand: false;
+          spacing: 10;
+          orientation: horizontal;
+
+          $CassetteCoverImage cover_image {
+            cover-size: 200;
+            image-widget-size: 200;
+            hexpand: false;
+            vexpand: false;
+            valign: start;
+            halign: start;
+          }
+
+          Box {
+            vexpand: false;
+            spacing: 4;
+            orientation: vertical;
+            margin-start: 8;
+
+            Box {
+              Box {
+                Label {
+                  css-classes: ["title-3"];
+                  margin-end: 20;
+                  justify: left;
+                  label: _("Playlist");
+                  halign: start;
+                  hexpand: true;
+                }
+
+                Label duration_label {
+                  css-classes: ["dim-label"];
+                  margin-end: 10;
+                  hexpand: false;
+                  halign: end;
+                }
+              }
+            }
+
+            Box {
+              spacing: 12;
+
+              Box {
+                orientation: vertical;
+                spacing: 4;
+
+                Label playlist_name_label {
+                  css-classes: ["title-1"];
+                  halign: start;
+                  justify: left;
+                  wrap: true;
+                }
+
+                Label playlist_desc_label {
+                  css-classes: ["body"];
+                  halign: start;
+                  justify: left;
+                  wrap: true;
+                }
+              }
+
+              Button edit_button {
+                css-classes: ["flat", "circular"];
+                halign: end;
+                valign: start;
+                icon-name: "document-edit-symbolic";
+                visible: false;
+              }
+
+              Button remove_button {
+                css-classes: ["flat", "circular", "destructive-action"];
+                halign: end;
+                valign: start;
+                icon-name: "user-trash-symbolic";
+                visible: false;
+                clicked => $on_remove_button_clicked();
+              }
+            }
+
+            Label playlist_status {
+              css-classes: ["caption"];
+              halign: start;
+              wrap: true;
+            }
+
+            Box {
+              margin-bottom: 2;
+              spacing: 8;
+              vexpand: true;
+              valign: end;
+
+              Button play_button {
+                css-classes: ["suggested-action", "pill"];
+                vexpand: false;
+                valign: center;
+                clicked => $on_play_button_clicked();
+
+                $CassettePlayMarkContext play_mark_context {
+                  css-classes: ["suggested-action", "pill"];
+                  context-type: "playlist";
+                }
+              }
+
+              $CassetteLikeButton like_button {
+                css-classes: ["flat"];
+                object-content-type: "playlist";
+              }
+
+              Switch visibility_switch {
+                halign: start;
+                valign: center;
+                hexpand: false;
+                vexpand: false;
+                visible: false;
+                tooltip-text: _("Change playlist visibility");
+              }
+
+              $CassettePlaylistOptionsButton playlist_options_button {
+                css-classes: ["flat", "circular"];
+                valign: center;
+                halign: start;
+                hexpand: false;
+              }
+
+              Button add_page_button {
+                css-classes: ["flat", "circular"];
+                visible: false;
+                icon-name: "bookmark-new-symbolic";
+                valign: center;
+                halign: start;
+                tooltip-text: _("Add page to header");
+                clicked => $on_add_page_button_clicked();
+              }
+
+              $CassetteSaveStack save_stack {
+                halign: end;
+                hexpand: true;
+                content-type: "playlist";
+              }
+
+              Stack save_buttons_stack {
+                hexpand: false;
+
+                StackPage {
+                  name: "save";
+                  child: Button save_button {
+                    hexpand: true;
+                    halign: end;
+                    valign: center;
+                    tooltip-text: _("Save");
+                    clicked => $on_save_button_clicked();
+
+                    Adw.ButtonContent {
+                      icon-name: "cache-perm-symbolic";
+                      label: _("Save");
+                    }
+                  };
+                }
+
+                StackPage {
+                  name: "delete";
+                  child: Button delete_button {
+                    css-classes: ["destructive-action"];
+                    hexpand: true;
+                    halign: end;
+                    valign: center;
+                    tooltip-text: _("Delete");
+                    clicked => $on_delete_button_clicked();
+
+                    Adw.ButtonContent {
+                      icon-name: "edit-delete-symbolic";
+                      label: _("Delete");
+                    }
+                  };
+                }
+
+                StackPage {
+                  name: "abort";
+                  child: Button abort_button {
+                    hexpand: true;
+                    halign: end;
+                    valign: center;
+                    tooltip-text: _("Abort");
+                    clicked => $on_abort_button_clicked();
+
+                    Adw.ButtonContent {
+                      icon-name: "edit-delete-symbolic";
+                      label: _("Stop");
+                    }
+                  };
+                }
+              }
+            }
+          }
+        }
+      };
+    };
+  };
+}
+

@@ -1,0 +1,26 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteDislikedTracksView : $CassetteHasTracksView {
+  ScrolledWindow scrolled_window {
+    hexpand: true;
+    propagate-natural-height: true;
+    hscrollbar-policy: never;
+
+    Adw.Clamp {
+      maximum-size: 1000;
+
+      Box main_box {
+        orientation: vertical;
+
+        Label disliked_label {
+          css-classes: ["title-1"];
+
+          margin-top: 4;
+          label: _("Disliked tracks");
+        }
+      }
+    }
+  }
+}
+

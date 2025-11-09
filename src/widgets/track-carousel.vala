@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -76,10 +76,10 @@ public class Cassette.TrackCarousel : Adw.Bin, Gtk.Orientable {
         }
     }
 
-    uint check_situation_timeout = 0;
+    uint? check_situation_timeout = null;
     bool is_scrolling_now = false;
 
-    ulong connect_id = 0;
+    ulong? connect_id = null;
 
     public TrackCarousel (
         Gtk.Orientation orientation
@@ -105,19 +105,11 @@ public class Cassette.TrackCarousel : Adw.Bin, Gtk.Orientable {
 
         if (interactive) {
             var gs = new Gtk.GestureClick ();
-            gs.pressed.connect (() => {
-                is_scrolling_now = true;
-            });
+            gs.pressed.connect (on_gesture_pressed);
             carousel.add_controller (gs);
 
             var se = new Gtk.EventControllerScroll (Gtk.EventControllerScrollFlags.HORIZONTAL);
-            se.scroll.connect ((dx, dy) => {
-                if (dx != 0) {
-                    is_scrolling_now = true;
-                }
-
-                return false;
-            });
+            se.scroll.connect (on_scroll_event);
             carousel.add_controller (se);
 
             var player = Application.tape_client.player;
@@ -128,54 +120,11 @@ public class Cassette.TrackCarousel : Adw.Bin, Gtk.Orientable {
                 BindingFlags.DEFAULT | BindingFlags.INVERT_BOOLEAN
             );
 
-            carousel.notify["position"].connect (() => {
-                double size_m_left = 0.9;
-                double size_m_center = 0.9;
-                double size_m_right = 0.9;
-
-                double mod = carousel.position - (int) carousel.position;
-
-                // near left panel
-                if (carousel.position < 0.5) {
-                    size_m_left = 1.0 - (mod * 0.1);
-                    size_m_center = 0.9 + (mod * 0.1);
-
-                // near center, moving to left
-                } else if (carousel.position < 1.0) {
-                    if (mod > 0.5) {
-                        mod = 1.0 - mod;
-                    }
-
-                    size_m_center = 1.0 - (mod * 0.1);
-                    size_m_left = 0.9 + (mod * 0.1);
-
-                // near center, moving to right
-                } else if (carousel.position < 1.5) {
-                    size_m_center = 1.0 - (mod * 0.1);
-                    size_m_right = 0.9 + (mod * 0.1);
-
-                // near right
-                } else {
-                    if (mod > 0.5) {
-                        mod = 1.0 - mod;
-                    }
-
-                    size_m_right = 1.0 - (mod * 0.1);
-                    size_m_center = 0.9 + (mod * 0.1);
-                }
-
-                track_info_panel_left.image_actual_size = (int) ((double) panels_width * size_m_left);
-                track_info_panel_center.image_actual_size = (int) ((double) panels_width * size_m_center);
-                track_info_panel_right.image_actual_size = (int) ((double) panels_width * size_m_right);
-            });
+            carousel.notify.connect (on_carousel_notify);
 
         } else {
             var player = Application.tape_client.player;
-            connect_id = player.current_track_finish_loading.connect_after (() => {
-                check_situation ();
-                SignalHandler.disconnect (player, connect_id);
-                connect_id = 0;
-            });
+            connect_id = player.current_track_finish_loading.connect_after (on_current_track_finish_loading);
         }
 
         bind_property (
@@ -190,53 +139,81 @@ public class Cassette.TrackCarousel : Adw.Bin, Gtk.Orientable {
 
         player.next_track_loaded.connect (check_situation);
 
-        player.notify["shuffle-mode"].connect (check_situation);
-        player.notify["repeat-mode"].connect (check_situation);
+        player.notify.connect (on_player_notify);
 
-        player.ready_play_next.connect ((repeat) => {
-            is_scrolling_now = false;
-            carousel.scroll_to (track_info_panel_right, true);
-        });
+        player.ready_play_next.connect (on_ready_play_next);
 
-        player.ready_play_prev.connect ((repeat) => {
-            is_scrolling_now = false;
-            carousel.scroll_to (track_info_panel_left, true);
-        });
+        player.ready_play_prev.connect (on_ready_play_prev);
 
-        map.connect (() => {
-            carousel.page_changed.connect (on_carousel_page_changed);
-            start_check_situation ();
-        });
-        unmap.connect (() => {
-            carousel.page_changed.disconnect (on_carousel_page_changed);
-            end_check_situation ();
-        });
+        map.connect (on_map);
+        unmap.connect (on_unmap);
+    }
+
+    void on_gesture_pressed () {
+        is_scrolling_now = true;
+    }
+
+    bool on_scroll_event (double dx, double dy) {
+        if (dx != 0) {
+            is_scrolling_now = true;
+        }
+        return false;
+    }
+
+    void on_current_track_finish_loading () {
+        check_situation ();
+        if (connect_id != null) {
+            var player = Application.tape_client.player;
+            SignalHandler.disconnect (player, connect_id);
+            connect_id = null;
+        }
+    }
+
+    void on_ready_play_next () {
+        is_scrolling_now = false;
+        carousel.scroll_to (track_info_panel_right, true);
+    }
+
+    void on_ready_play_prev () {
+        is_scrolling_now = false;
+        carousel.scroll_to (track_info_panel_left, true);
+    }
+
+    void on_map () {
+        carousel.page_changed.connect (on_carousel_page_changed);
+        start_check_situation ();
+    }
+
+    void on_unmap () {
+        carousel.page_changed.disconnect (on_carousel_page_changed);
+        end_check_situation ();
     }
 
     void start_check_situation () {
-        if (check_situation_timeout != 0) {
+        if (check_situation_timeout != null) {
             end_check_situation ();
         }
 
-        check_situation_timeout = Timeout.add_seconds (3, () => {
-            check_situation ();
-
-            return true;
-        }, Priority.LOW);
+        check_situation_timeout = Timeout.add_seconds (3, on_check_situation_tick, Priority.LOW);
         check_situation ();
     }
 
+    bool on_check_situation_tick () {
+        check_situation ();
+        return true;
+    }
+
     void end_check_situation () {
-        if (check_situation_timeout == 0) {
+        if (check_situation_timeout == null) {
             return;
         }
 
         Source.remove (check_situation_timeout);
-        check_situation_timeout = 0;
+        check_situation_timeout = null;
     }
 
     /**
-     * Check num of track panels, current position, track infos 
+     * Check num of track panels, current position, track infos
      */
     void check_situation () {
         if (!get_mapped () || is_scrolling_now) {
@@ -307,9 +284,17 @@ public class Cassette.TrackCarousel : Adw.Bin, Gtk.Orientable {
         check_situation ();
     }
 
+    void on_carousel_notify (ParamSpec pspec) {
+        // Handle carousel property notifications if needed
+    }
+
+    void on_player_notify (ParamSpec pspec) {
+        // Handle player property notifications if needed
+    }
+
     void on_carousel_page_changed (uint position) {
         var player = Application.tape_client.player;
-        
+
         if (is_scrolling_now) {
             if (position == 2) {
                 if (can_swipe_right) {
@@ -336,4 +321,3 @@ public class Cassette.TrackCarousel : Adw.Bin, Gtk.Orientable {
         is_scrolling_now = false;
     }
 }
-

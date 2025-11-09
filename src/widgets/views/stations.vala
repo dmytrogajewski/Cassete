@@ -1,16 +1,17 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 using Tape;
 using Tape.YaMAPI;
+using GLib;
 
 [GtkTemplate (ui = "/space/rirusha/Cassette/ui/stations-view.ui")]
 public class Cassette.StationsView : BaseView {
@@ -35,8 +36,6 @@ public class Cassette.StationsView : BaseView {
     unowned Gtk.SearchEntry search_entry;
     [GtkChild]
     unowned Gtk.FlowBox search_flow_box;
-    [GtkChild]
-    unowned Gtk.Button back_button;
 
     uint visible_search_childs_n = 0;
 
@@ -56,15 +55,21 @@ public class Cassette.StationsView : BaseView {
             return false;
         });
 
-        search_entry.changed.connect (() => {
-            scrolled_window.reveal_header = search_entry.text == "";
-        });
+        search_entry.changed.connect (on_search_entry_changed);
 
-        back_button.clicked.connect (() => {
-            if (root_view != null) {
-                root_view.backward ();
-            }
-        });
+    }
+
+    void on_search_entry_changed () {
+        scrolled_window.reveal_header = search_entry.text == "";
+        debug ("[TEST] StationsView search changed: query='%s'", search_entry.text);
+    }
+
+    [GtkCallback]
+    void on_back_button_clicked () {
+        if (root_view != null) {
+            debug ("[TEST] StationsView back button clicked");
+            root_view.backward ();
+        }
     }
 
     async void search_entry_search_changed_async () {
@@ -74,12 +79,15 @@ public class Cassette.StationsView : BaseView {
 
         if (search_entry.text == "") {
             stack.visible_child_name = "default";
+            debug ("[TEST] StationsView search cleared");
 
         } else if (visible_search_childs_n != 0) {
             stack.visible_child_name = "search";
+            debug ("[TEST] StationsView search results visible: count=%u", visible_search_childs_n);
 
         } else {
             stack.visible_child_name = "no-results";
+            debug ("[TEST] StationsView search no results");
         }
     }
 
@@ -98,6 +106,9 @@ public class Cassette.StationsView : BaseView {
         Gee.ArrayList<YaMAPI.Rotor.Station> stations_list
     ) {
         clear_all_boxes ();
+        debug ("[TEST] StationsView populating dashboard: dashboard_stations=%d list_stations=%d",
+               dashboard.stations.size,
+               stations_list.size);
 
         foreach (var station in dashboard.stations) {
             dashboard_flow_box.append (new ActionCardStation (station.station));
@@ -142,6 +153,7 @@ public class Cassette.StationsView : BaseView {
         }
 
         show_ready ();
+        debug ("[TEST] StationsView data load complete");
 
         //  Magicaly fix it https://t.me/RiruAndFriends/49936
         Idle.add_once (() => {
@@ -167,14 +179,26 @@ public class Cassette.StationsView : BaseView {
 
     public async override int try_load_from_web () {
         var yam_helper = Application.tape_client.yam_helper;
-        var dashboard = yield yam_helper.get_stations_dashboard ();
-        var stations_list = yield yam_helper.get_all_stations ();
+        YaMAPI.Rotor.Dashboard? dashboard = null;
+        Gee.ArrayList<YaMAPI.Rotor.Station>? stations_list = null;
+        try {
+            dashboard = yield yam_helper.get_stations_dashboard ();
+            stations_list = yield yam_helper.get_all_stations ();
+            debug ("[TEST] StationsView API load success: dashboard=%s stations=%s",
+                   dashboard != null ? "true" : "false",
+                   stations_list != null ? "true" : "false");
+        } catch (Tape.CantUseError e) {
+            warning ("Failed to load stations: %s", e.message);
+            debug ("[TEST] StationsView API load failed: %s", e.message);
+            return 0;
+        }
 
         if (dashboard != null && stations_list != null) {
             yield set_values_async (dashboard, stations_list);
             return -1;
         }
 
+        debug ("[TEST] StationsView API load returned empty data");
         return 0;
     }
 
@@ -182,4 +206,3 @@ public class Cassette.StationsView : BaseView {
         return false;
     }
 }
-

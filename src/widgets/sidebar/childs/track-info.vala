@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -36,8 +36,6 @@ public class Cassette.TrackInfo : SidebarChildBin {
     unowned Gtk.Label album_genre_value;
     [GtkChild]
     unowned Gtk.Box album_genre_row;
-    [GtkChild]
-    unowned Gtk.Box track_info_box;
 
     public YaMAPI.Track track_info { get; construct set; }
     YaMAPI.Album? album_info = null;
@@ -50,6 +48,7 @@ public class Cassette.TrackInfo : SidebarChildBin {
         title = _("Track Information");
         child_id = track_info.id;
         subtitle = track_info.title_with_version;
+        add_css_class ("slim-track-info");
 
         update_track_info ();
     }
@@ -99,4 +98,3 @@ public class Cassette.TrackInfo : SidebarChildBin {
     }
 
 }
-

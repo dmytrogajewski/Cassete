@@ -12,8 +12,8 @@ public class Cassette.StationMicro : Adw.Bin {
     unowned Gtk.Image station_image;
     [GtkChild]
     unowned Gtk.Label station_title;
-    [GtkChild]
-    unowned Gtk.Button self;
+    [GtkChild (name = "root_button")]
+    unowned Gtk.Button root_button;
     [GtkChild]
     unowned Gtk.Box card_box;
 
@@ -28,31 +28,52 @@ public class Cassette.StationMicro : Adw.Bin {
         Object ();
     }
 
-    construct {
-        if (station_info != null) {
-            // Hover/press highlight
-            var hover = new Gtk.EventControllerMotion ();
-            hover.enter.connect (() => { card_box.add_css_class ("action-card-hover"); });
-            hover.leave.connect (() => { card_box.remove_css_class ("action-card-hover"); });
-            self.add_controller (hover);
+        construct {
+            if (station_info != null) {
+                // Hover/press highlight
+                var hover = new Gtk.EventControllerMotion ();
+                hover.enter.connect (on_hover_enter);
+                hover.leave.connect (on_hover_leave);
+                root_button.add_controller (hover);
 
-            var press = new Gtk.GestureClick ();
-            press.pressed.connect (() => { card_box.add_css_class ("action-card-active"); });
-            press.released.connect (() => { card_box.remove_css_class ("action-card-active"); });
-            press.stopped.connect (() => { card_box.remove_css_class ("action-card-active"); });
-            self.add_controller (press);
+                var press = new Gtk.GestureClick ();
+                press.pressed.connect (on_press_pressed);
+                press.released.connect (on_press_released);
+                press.stopped.connect (on_press_stopped);
+                root_button.add_controller (press);
 
-            self.clicked.connect (() => {
-                if (parent_view != null && parent_view.root_view != null) {
-                    parent_view.root_view.add_view (new StationsView ());
-                }
-            });
-
-            set_values (); 
-        } else {
-            sensitive = false;
+                set_values ();
+            } else {
+                sensitive = false;
+            }
         }
-    }
+
+        void on_hover_enter () {
+            card_box.add_css_class ("action-card-hover");
+        }
+
+        void on_hover_leave () {
+            card_box.remove_css_class ("action-card-hover");
+        }
+
+        void on_press_pressed () {
+            card_box.add_css_class ("action-card-active");
+        }
+
+        void on_press_released () {
+            card_box.remove_css_class ("action-card-active");
+        }
+
+        void on_press_stopped () {
+            card_box.remove_css_class ("action-card-active");
+        }
+
+        [GtkCallback]
+        void on_clicked () {
+            if (parent_view != null && parent_view.root_view != null) {
+                parent_view.root_view.add_view (new StationsView ());
+            }
+        }
 
     void set_values () {
         if (station_info == null) return;
@@ -92,5 +113,3 @@ public class Cassette.StationMicro : Adw.Bin {
         }
     }
 }
-
-

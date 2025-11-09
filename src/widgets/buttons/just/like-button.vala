@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -80,8 +80,6 @@ namespace Cassette {
             // Tooltip provides accessible name for screen readers
             real_button.tooltip_text = _("Like");
 
-            real_button.clicked.connect (like_dislike);
-
             var yam_helper = Application.tape_client.yam_helper;
             yam_helper.track_likes_start_change.connect (liked_start_change);
             yam_helper.track_likes_end_change.connect (liked_changed);
@@ -100,6 +98,10 @@ namespace Cassette {
             if (app != null) {
                 app.application_state_changed.connect (application_state_changed);
             }
+        }
+
+        protected override void on_real_button_clicked () {
+            like_dislike.begin ();
         }
 
         public void init_content (string content_id) {
@@ -187,4 +189,3 @@ namespace Cassette {
         }
     }
 }
-

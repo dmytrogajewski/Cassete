@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -42,20 +42,21 @@ public class Cassette.HeaderedScrolledWindow : Adw.Bin {
     public bool reveal_header { get; set; default = true; }
 
     construct {
-        real_scrolled_window.vadjustment.value_changed.connect (() => {
-            if (real_scrolled_window.vadjustment.value > 0) {
-                if (!on_top) {
-                    on_top = true;
-                }
+        real_scrolled_window.vadjustment.value_changed.connect (on_vadjustment_value_changed);
 
-            } else {
-                if (on_top) {
-                    on_top = false;
-                }
+        bind_property ("reveal-header", header_revealer, "reveal-child",
+                       BindingFlags.SYNC_CREATE | BindingFlags.BIDIRECTIONAL);
+    }
+
+    void on_vadjustment_value_changed () {
+        if (real_scrolled_window.vadjustment.value > 0) {
+            if (!on_top) {
+                on_top = true;
             }
-        });
-
-        bind_property ("reveal-header", header_revealer, "reveal-child", BindingFlags.SYNC_CREATE | BindingFlags.BIDIRECTIONAL);
+        } else {
+            if (on_top) {
+                on_top = false;
+            }
+        }
     }
 }
-

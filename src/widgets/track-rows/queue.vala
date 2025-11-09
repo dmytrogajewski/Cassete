@@ -1,15 +1,16 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 using Tape;
+using Tape.YaMAPI;
 
 [GtkTemplate (ui = "/space/rirusha/Cassette/ui/track-queue-content.ui")]
 public class Cassette.TrackQueue : TrackRow {
@@ -22,6 +23,8 @@ public class Cassette.TrackQueue : TrackRow {
     unowned TrackQueueOptionsButton track_queue_options_button;
 
     public int position { get; construct; }
+
+    public override HasTracks? yam_object { get; construct; default = null; }
 
     protected override PlayMarkTrack play_mark_track {
         owned get {
@@ -56,4 +59,3 @@ public class Cassette.TrackQueue : TrackRow {
         info_panel.position = position + 1;
     }
 }
-

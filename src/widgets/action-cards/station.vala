@@ -1,16 +1,17 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 using Tape;
 using Tape.YaMAPI;
+using GLib;
 
 [GtkTemplate (ui = "/space/rirusha/Cassette/ui/action-card-station.ui")]
 public class Cassette.ActionCardStation : ActionCardCustom {
@@ -114,7 +115,7 @@ public class Cassette.ActionCardStation : ActionCardCustom {
         add_css_class ("action-card");
 
         content_label.label = station_info.name;
-        
+
         // Try to load image from full_image_url if available, otherwise use icon
         if (station_info.full_image_url != null && station_info.full_image_url != "") {
             load_image_from_url.begin ();
@@ -127,14 +128,8 @@ public class Cassette.ActionCardStation : ActionCardCustom {
         tooltip_text = station_info.name;
 
         var gs = new Gtk.EventControllerMotion ();
-        gs.enter.connect (() => {
-            image_stack.visible_child_name = "play-mark";
-        });
-        gs.leave.connect (() => {
-            if (!play_mark_context.is_current_playing) {
-                image_stack.visible_child_name = "image";
-            }
-        });
+        gs.enter.connect (on_motion_enter);
+        gs.leave.connect (on_motion_leave);
         add_controller (gs);
 
         var yam_helper = Application.tape_client.yam_helper;
@@ -143,11 +138,32 @@ public class Cassette.ActionCardStation : ActionCardCustom {
         }
 
         var player = Application.tape_client.player;
-        play_mark_context.triggered_not_playing.connect (() => {
-            player.start_flow.begin (station_info.id.normal);
-        });
+        play_mark_context.triggered_not_playing.connect (on_play_mark_triggered);
 
-        play_mark_context.notify["is-current-playing"].connect (() => {
+        play_mark_context.notify.connect (on_play_mark_context_notify);
+
+        clicked.connect (play_mark_context.trigger);
+        play_mark_context.init_content (station_info.id.normal);
+    }
+
+    void on_motion_enter () {
+        image_stack.visible_child_name = "play-mark";
+    }
+
+    void on_motion_leave () {
+        if (!play_mark_context.is_current_playing) {
+            image_stack.visible_child_name = "image";
+        }
+    }
+
+    void on_play_mark_triggered () {
+        var player = Application.tape_client.player;
+        debug ("[TEST] Station card trigger: station_id=%s", station_info.id.normal);
+        player.start_flow.begin (station_info.id.normal);
+    }
+
+    void on_play_mark_context_notify (ParamSpec pspec) {
+        if (pspec.name == "is-current-playing") {
             is_current_playing = play_mark_context.is_current_playing;
 
             if (play_mark_context.is_current_playing) {
@@ -155,30 +171,27 @@ public class Cassette.ActionCardStation : ActionCardCustom {
             } else {
                 image_stack.visible_child_name = "image";
             }
-        });
-
-        clicked.connect (play_mark_context.trigger);
-        play_mark_context.init_content (station_info.id.normal);
+        }
     }
-    
+
     async void load_image_from_url () {
         if (station_info.full_image_url == null || station_info.full_image_url == "") {
             // Fallback to icon if URL is empty
             content_image.icon_name = station_info.icon.get_internal_icon_name (station_info.id.normal);
             return;
         }
-        
+
         try {
             // Ensure URI has https:// scheme
             string full_uri = station_info.full_image_url;
             if (!full_uri.has_prefix ("http://") && !full_uri.has_prefix ("https://")) {
                 full_uri = "https://" + full_uri;
             }
-            
+
             // Fetch image using yam_helper
             var yam_helper = Application.tape_client.yam_helper;
             var image_bytes = yield yam_helper.load_image_data (full_uri);
-            
+
             if (image_bytes != null) {
                 try {
                     var loader = new Gdk.PixbufLoader ();
@@ -202,7 +215,7 @@ public class Cassette.ActionCardStation : ActionCardCustom {
         } catch (Error e) {
             warning ("Failed to load image from URL %s: %s", station_info.full_image_url, e.message);
         }
-        
+
         // Fallback to icon if image loading failed
         content_image.icon_name = station_info.icon.get_internal_icon_name (station_info.id.normal);
         if (is_shrinked) {
@@ -210,4 +223,3 @@ public class Cassette.ActionCardStation : ActionCardCustom {
         }
     }
 }
-

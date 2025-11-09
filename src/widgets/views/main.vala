@@ -12,14 +12,11 @@
 using Tape;
 using Tape.YaMAPI;
 using Gee;
+using GLib;
 
 [GtkTemplate (ui = "/space/rirusha/Cassette/ui/main-view.ui")]
 public class Cassette.MainView : BaseView {
 
-    [GtkChild]
-    unowned HeaderedScrolledWindow scrolled_window;
-    [GtkChild]
-    unowned Gtk.Overlay main_overlay;
     [GtkChild]
     unowned Gtk.Box main_box;
 
@@ -242,60 +239,54 @@ public class Cassette.MainView : BaseView {
     }
 
     async void set_values_async () {
+        debug ("[TEST] MainView set_values_async start");
         clear_sections ();
         
         var yam_helper = Application.tape_client.yam_helper;
         var client = yam_helper.client;
 
         // Load quick access (Liked and History) - as list items
+        YaMAPI.Playlist? liked_full = null;
         try {
-            // Load full liked playlist to get track count and proper cover
-            YaMAPI.Playlist? liked_full = null;
-            try {
-                liked_full = yield client.users_playlists_playlist ("3", false, yam_helper.me.uid);
-            } catch (Error e) {
-                debug ("Failed to load full liked playlist: %s", e.message);
-            }
-            var liked_playlist = liked_full ?? new YaMAPI.Playlist.liked ();
-            
-            string liked_subtitle = liked_playlist.track_count > 0 ? liked_playlist.track_count.to_string () : "";
-            var liked_title_text = liked_playlist.title ?? _("Liked");
-            var liked_card = new ActionCardWide (liked_playlist, liked_title_text, liked_subtitle);
-            liked_card.hexpand = true;
-            liked_card.halign = Gtk.Align.FILL;
-            // Ensure labels are populated regardless of construct order
-            liked_card.update_title_label (liked_title_text);
-            liked_card.update_subtitle_label (liked_subtitle);
-            liked_card.clicked.connect (() => {
-                if (root_view != null) {
-                    root_view.add_view (new PlaylistView (liked_playlist.uid, liked_playlist.kind));
-                }
-            });
-            quick_access_list.append (liked_card);
-            
-            // Load History playlist
-            try {
-                var history_playlist = yield client.landing_block_premiere_recent_tracks ();
-                if (history_playlist != null) {
-                    var history_title_text = _("History");
-                    var history_sub_text = history_playlist.description;
-                    var history_card = new ActionCardWide (history_playlist, history_title_text, history_sub_text);
-                    history_card.hexpand = true;
-                    history_card.halign = Gtk.Align.FILL;
-                    history_card.update_title_label (history_title_text);
-                    history_card.update_subtitle_label (history_sub_text);
-                    history_card.clicked.connect (() => {
-                        if (root_view != null) {
-                            root_view.add_view (new PlaylistView (history_playlist.uid, history_playlist.kind));
-                        }
-                    });
-                    quick_access_list.append (history_card);
-                }
-            } catch (Error e) {
-                debug ("Failed to load history playlist: %s", e.message);
+            liked_full = yield client.users_playlists_playlist ("3", false, yam_helper.me.uid);
+        } catch (Error e) {
+            debug ("Failed to load full liked playlist: %s", e.message);
+        }
+        var liked_playlist = liked_full ?? new YaMAPI.Playlist.liked ();
+        
+        string liked_subtitle = liked_playlist.track_count > 0 ? liked_playlist.track_count.to_string () : "";
+        var liked_title_text = liked_playlist.title ?? _("Liked");
+        var liked_card = new ActionCardWide (liked_playlist, liked_title_text, liked_subtitle);
+        liked_card.hexpand = true;
+        liked_card.halign = Gtk.Align.FILL;
+        // Ensure labels are populated regardless of construct order
+        liked_card.update_title_label (liked_title_text);
+        liked_card.update_subtitle_label (liked_subtitle);
+        // Capture liked_playlist via closure
+        var liked_playlist_capture = liked_playlist;
+        liked_card.clicked.connect (() => on_liked_card_clicked (liked_playlist_capture));
+        quick_access_list.append (liked_card);
+        debug ("[TEST] MainView added liked quick access card: tracks=%d", liked_playlist.track_count);
+        
+        // Load History playlist
+        try {
+            var history_playlist = yield client.landing_block_premiere_recent_tracks ();
+            if (history_playlist != null) {
+                var history_title_text = _("History");
+                var history_sub_text = history_playlist.description;
+                var history_card = new ActionCardWide (history_playlist, history_title_text, history_sub_text);
+                history_card.hexpand = true;
+                history_card.halign = Gtk.Align.FILL;
+                history_card.update_title_label (history_title_text);
+                history_card.update_subtitle_label (history_sub_text);
+                // Capture history_playlist via closure
+                var history_playlist_capture = history_playlist;
+                history_card.clicked.connect (() => on_history_card_clicked (history_playlist_capture));
+                quick_access_list.append (history_card);
+                debug ("[TEST] MainView added history quick access card: title=%s tracks=%d", history_title_text, history_playlist.track_count);
             }
         } catch (Error e) {
-            warning ("Failed to load quick access: %s", e.message);
+            debug ("Failed to load history playlist: %s", e.message);
         }
 
         // Load new releases
@@ -304,13 +295,18 @@ public class Cassette.MainView : BaseView {
             if (new_releases != null) {
                 foreach (var album in new_releases.get_albums ()) {
                     if (album != null) {
-                        debug ("[MainView] NewRelease album title=%s cover_uri=%s", album.title, album.cover_uri ?? "null");
+                        debug ("[MainView] NewRelease album title=%s cover_uri=%s",
+                               album.title, album.cover_uri ?? "null");
                         var album_micro = new AlbumMicro (this, album);
                         new_releases_box.append (album_micro);
                     }
                 }
             }
-        } catch (Error e) {
+        } catch (ApiBase.SoupError e) {
+            warning ("Failed to load new releases: %s", e.message);
+        } catch (ApiBase.JsonError e) {
+            warning ("Failed to load new releases: %s", e.message);
+        } catch (ApiBase.BadStatusCodeError e) {
             warning ("Failed to load new releases: %s", e.message);
         }
 
@@ -322,6 +318,8 @@ public class Cassette.MainView : BaseView {
                 foreach (var group in waves.groups) {
                     if (group.items.size == 0) continue;
                     
+                    bool first_tab = waves_tabs_box.get_first_child () == null;
+
                     // Create tab button for this group
                     var tab_button = new Gtk.ToggleButton ();
                     tab_button.label = group.title;
@@ -355,15 +353,13 @@ public class Cassette.MainView : BaseView {
                     // Add to stack
                     waves_stack.add_named (scrolled, group.id);
                     
-                    // Connect tab button
-                    tab_button.toggled.connect (() => {
-                        if (tab_button.active && waves_stack != null) {
-                            waves_stack.visible_child_name = group.id;
-                        }
-                    });
+                    // Connect tab button - capture group.id via closure
+                    string group_id_capture = group.id;
+                    tab_button.toggled.connect (() => on_waves_tab_button_toggled (group_id_capture));
                     
-                    // Select first tab
-                    if (waves_tabs_box.get_first_child () == null) {
+
+                    // Select first tab after it has been added
+                    if (first_tab) {
                         tab_button.active = true;
                     }
                     
@@ -381,22 +377,14 @@ public class Cassette.MainView : BaseView {
                 debug ("Loaded in-style with %d tabs", in_style.tabs.size);
                 foreach (var tab in in_style.tabs) {
                         if (tab.title != null) {
+                            bool first_tab = in_style_tabs_box.get_first_child () == null;
                             // Create tab button
                             var tab_button = new Gtk.ToggleButton ();
                             tab_button.label = tab.title;
                             tab_button.group = null; // Will be grouped by Gtk
-                            tab_button.toggled.connect (() => {
-                                if (tab_button.active && in_style_stack != null) {
-                                    in_style_stack.visible_child_name = tab.id.to_string ();
-                                }
-                            });
-                            
-                            // Check if this is the first tab
-                            if (in_style_tabs_box.get_first_child () == null) {
-                                tab_button.active = true; // First tab active
-                            }
-                            
-                            in_style_tabs_box.append (tab_button);
+                            // Capture tab.id via closure
+                            string tab_id_capture = tab.id.to_string ();
+                            tab_button.toggled.connect (() => on_in_style_tab_button_toggled (tab_id_capture));
                             
                             // Create albums box for this tab
                             var albums_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 12);
@@ -418,11 +406,19 @@ public class Cassette.MainView : BaseView {
                             if (tab.items != null) {
                                 foreach (var item in tab.items) {
                                     if (item.album != null) {
-                                        debug ("[MainView] InStyle tab=%s album title=%s cover_uri=%s", tab.title, item.album.title, item.album.cover_uri ?? "null");
+                                        debug ("[MainView] InStyle tab=%s album title=%s cover_uri=%s",
+                                               tab.title, item.album.title,
+                                               item.album.cover_uri ?? "null");
                                         var album_micro = new AlbumMicro (this, item.album);
                                         albums_box.append (album_micro);
                                     }
                                 }
+                            }
+                            
+                            in_style_tabs_box.append (tab_button);
+
+                            if (first_tab) {
+                                tab_button.active = true; // First tab active
                             }
                         }
                 }
@@ -434,6 +430,7 @@ public class Cassette.MainView : BaseView {
         }
 
         show_ready ();
+        debug ("[TEST] MainView show_ready emitted");
     }
 
     void set_values () {
@@ -462,19 +459,52 @@ public class Cassette.MainView : BaseView {
         var player = Application.tape_client.player;
         var station_id = YaMAPI.Rotor.StationType.ON_YOUR_WAVE;
         
-        player.start_flow.begin (station_id, new ArrayList<YaMAPI.Track> (), (obj, res) => {
-            try {
-                player.start_flow.end (res);
-            } catch (Error e) {
-                warning ("Failed to start My Wave: %s", e.message);
-            }
-        });
+        debug ("[TEST] My Wave play button clicked: starting station flow");
+        player.start_flow.begin (station_id, new ArrayList<YaMAPI.Track> (), on_start_flow_complete);
+    }
+
+    void on_start_flow_complete (Object? obj, AsyncResult res) {
+        try {
+            var player = Application.tape_client.player;
+            player.start_flow.end (res);
+        } catch (Error e) {
+            warning ("Failed to start My Wave: %s", e.message);
+        }
     }
     
     void on_my_wave_settings () {
         // Open wave settings
+        debug ("[TEST] My Wave settings button clicked: navigating to StationsView");
         if (root_view != null) {
             root_view.add_view (new StationsView ());
+        }
+    }
+
+    void on_history_card_clicked (YaMAPI.Playlist history_playlist) {
+        debug ("[TEST] History card clicked: playlist=%s kind=%s", history_playlist.title ?? "<null>", history_playlist.kind ?? "<null>");
+        if (root_view != null) {
+            root_view.add_view (new PlaylistView.with_playlist (history_playlist));
+        }
+    }
+
+    void on_liked_card_clicked (YaMAPI.Playlist liked_playlist) {
+        debug ("[TEST] Liked card clicked: uid=%s kind=%s", liked_playlist.uid ?? "<null>", liked_playlist.kind ?? "<null>");
+        if (root_view != null) {
+            root_view.add_view (new PlaylistView (liked_playlist.uid, liked_playlist.kind));
+        }
+    }
+
+    void on_waves_tab_button_toggled (string group_id) {
+        debug ("[TEST] Waves tab toggled: group_id=%s", group_id);
+        if (waves_stack != null) {
+            waves_stack.visible_child_name = group_id;
+        }
+    }
+
+    void on_in_style_tab_button_toggled (string tab_id) {
+        debug ("[TEST] In-style tab toggled: tab_id=%s", tab_id);
+        if (in_style_stack != null) {
+            in_style_stack.visible_child_name = tab_id;
         }
     }
 }

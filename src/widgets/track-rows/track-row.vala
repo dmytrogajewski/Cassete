@@ -10,10 +10,13 @@
  */
 
 using Tape;
+using Tape.YaMAPI;
 
 public abstract class Cassette.TrackRow: Reactable {
 
     public YaMAPI.Track track_info { get; construct; }
+
+    public abstract HasTracks? yam_object { get; construct; }
 
     protected abstract PlayMarkTrack play_mark_track { owned get; }
 
@@ -51,6 +54,54 @@ public abstract class Cassette.TrackRow: Reactable {
         if (track_info.available) {
             play_mark_track.trigger ();
         }
+    }
+
+    protected void form_queue () {
+        if (yam_object == null) {
+            warning ("[TRACK_ROW] form_queue: yam_object is null, cannot form queue");
+            return;
+        }
+
+        var player = Application.tape_client.player;
+        var track_list = yam_object.get_filtered_track_list (
+            Application.app_settings.get_boolean ("explicit-visible"),
+            Application.app_settings.get_boolean ("child-visible"),
+            { track_info.id }
+        );
+
+        int track_index = track_list.index_of (track_info);
+
+        if (track_index == -1) {
+            for (int i = 0; i < track_list.size; i++) {
+                if (track_list[i].id == track_info.id) {
+                    track_index = i;
+                    break;
+                }
+            }
+
+            if (track_index == -1 && track_list.size > 0) {
+                warning ("[TRACK_ROW] form_queue: Track not found in list; falling back to index 0");
+                track_index = 0;
+            }
+        }
+
+        var context_type = get_context_type (yam_object);
+        var context_id = (yam_object.oid != null && yam_object.oid != "") ?
+            yam_object.oid : null;
+
+        debug (
+            "[TRACK_ROW] form_queue: Track at index %d, start_track_list with context_type=%s, context_id=%s",
+            track_index,
+            context_type,
+            context_id ?? "(null)");
+
+        player.start_track_list (
+            track_list,
+            context_type,
+            context_id,
+            track_index,
+            get_context_description (yam_object)
+        );
     }
 
     construct {

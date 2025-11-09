@@ -1,13 +1,15 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
+
+using GLib;
 
 public class Cassette.VolumeButton : CustomMenuButton {
 
@@ -25,6 +27,7 @@ public class Cassette.VolumeButton : CustomMenuButton {
 
             can_increase = volume < volume_upper;
             can_decrease = volume > volume_lower;
+            debug ("[TEST] VolumeButton volume setter: volume=%f", _volume);
         }
     }
 
@@ -43,6 +46,7 @@ public class Cassette.VolumeButton : CustomMenuButton {
             }
 
             check_icon ();
+            debug ("[TEST] VolumeButton mute toggled: mute=%s", _mute.to_string ());
         }
     }
 
@@ -139,6 +143,7 @@ public class Cassette.VolumeButton : CustomMenuButton {
         } else {
             volume = Math.pow (svol, 3.0);
         }
+        debug ("[TEST] VolumeButton change_volume: delta=%f new_volume=%f", dvol, volume);
     }
 
     void check_icon () {
@@ -225,6 +230,7 @@ public class Cassette.VolumeButton : CustomMenuButton {
             mute = false;
 
             volume = Math.pow (val * MUL, 3.0);
+            debug ("[TEST] VolumeButton scale change: raw=%f adjusted=%f volume=%f", new_val, val, volume);
 
             return true;
         });
@@ -308,4 +314,3 @@ public class Cassette.VolumeButton : CustomMenuButton {
         };
     }
 }
-

@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -13,7 +13,7 @@ namespace Cassette {
 
     public class LoadingPage : Adw.NavigationPage {
 
-        private Gtk.Spinner _loading_widget = new Gtk.Spinner () { 
+        private Gtk.Spinner _loading_widget = new Gtk.Spinner () {
             spinning = true,
             height_request = 32,
             width_request = 32
@@ -37,7 +37,7 @@ namespace Cassette {
 
                 var toolbar_view = new Adw.ToolbarView ();
                 toolbar_view.add_top_bar (header_bar);
-                
+
                 var center_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0) {
                     halign = Gtk.Align.CENTER,
                     valign = Gtk.Align.CENTER,
@@ -62,4 +62,3 @@ namespace Cassette {
         }
     }
 }
-

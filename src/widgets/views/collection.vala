@@ -12,15 +12,12 @@
 using Tape;
 using Tape.YaMAPI;
 using Gee;
+using GLib;
 
 [GtkTemplate (ui = "/space/rirusha/Cassette/ui/collection-view.ui")]
 public class Cassette.CollectionView : BaseView {
     [GtkChild]
-    unowned HeaderedScrolledWindow scrolled_window;
-    [GtkChild]
     unowned Gtk.Box main_box;
-    [GtkChild]
-    unowned Gtk.Button back_button;
 
     public override bool can_refresh { get; default = true; }
 
@@ -33,12 +30,6 @@ public class Cassette.CollectionView : BaseView {
     }
 
     construct {
-        back_button.clicked.connect (() => {
-            if (root_view != null) {
-                root_view.backward ();
-            }
-        });
-
         // Create sections for liked tracks, albums, and playlists
         // Liked tracks section
         var liked_tracks_section = new Adw.PreferencesGroup ();
@@ -79,6 +70,14 @@ public class Cassette.CollectionView : BaseView {
         liked_playlists_flow_box.homogeneous = true;
         liked_playlists_section.add (liked_playlists_flow_box);
         main_box.append (liked_playlists_section);
+    }
+
+    [GtkCallback]
+    void on_back_button_clicked () {
+        if (root_view != null) {
+            debug ("[TEST] CollectionView back button clicked");
+            root_view.backward ();
+        }
     }
 
     void set_values (
@@ -140,7 +139,7 @@ public class Cassette.CollectionView : BaseView {
 
         try {
             // Fetch collection data using new API endpoints
-            debug ("CollectionView: Fetching liked tracks...");
+            debug ("CollectionView: Fetching liked tracks…");
             liked_tracks = yield yam_helper.get_collection_liked_tracks (50);
             if (liked_tracks != null) {
                 debug ("CollectionView: Liked tracks result: %d tracks", liked_tracks.tracks.size);
@@ -148,7 +147,7 @@ public class Cassette.CollectionView : BaseView {
                 debug ("CollectionView: Liked tracks result: null");
             }
             
-            debug ("CollectionView: Fetching liked albums...");
+            debug ("CollectionView: Fetching liked albums…");
             liked_albums = yield yam_helper.get_collection_liked_albums (8);
             if (liked_albums != null) {
                 debug ("CollectionView: Liked albums result: %d albums", liked_albums.size);
@@ -156,22 +155,20 @@ public class Cassette.CollectionView : BaseView {
                 debug ("CollectionView: Liked albums result: null");
             }
             
-            debug ("CollectionView: Fetching liked playlists...");
+            debug ("CollectionView: Fetching liked playlists…");
             liked_playlists = yield yam_helper.get_collection_liked_playlists (8);
             if (liked_playlists != null) {
                 debug ("CollectionView: Liked playlists result: %d playlists", liked_playlists.size);
             } else {
                 debug ("CollectionView: Liked playlists result: null");
             }
-        } catch (ApiBase.BadStatusCodeError e) {
-            // Ignore bad status codes - show empty state
-            warning ("API returned bad status code for collection: %d", e.code);
-        } catch (Error e) {
+        } catch (GLib.Error e) {
             warning ("Failed to load collection: %s", e.message);
         }
 
         // Always show the view, even if some data is missing
         set_values (liked_tracks, liked_albums, liked_playlists);
+        debug ("[TEST] CollectionView load complete");
         return -1;
     }
 
@@ -180,4 +177,3 @@ public class Cassette.CollectionView : BaseView {
         return false;
     }
 }
-

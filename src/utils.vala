@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -103,7 +103,7 @@ namespace Cassette {
      * @return      seconds
      */
     public static int ms2sec (int64 ms) {
-        return (int) (ms / 1000);
+        return (int) (ms / 1000L);
     }
 
     /**
@@ -140,8 +140,8 @@ namespace Cassette {
 
     /**
      * Function to create text representation of time from milliseconds.
-     * ``ms2str (66110, true) ->  "1:06"`` 
-     * ``ms2str (66110, false) -> "Duration: 1 min."`` 
+     * ``ms2str (66110, true) ->  "1:06"``
+     * ``ms2str (66110, false) -> "Duration: 1 min."``
      *
      * @param ms        milliseconds
      * @param is_short  whether short representation is needed
@@ -155,9 +155,9 @@ namespace Cassette {
 
     /**
      * Function to pad string with characters on the left.
-     * ``zfill ("56", 5) -> "00056"`` 
-     * ``zfill ("56", 2) -> "56"`` 
-     * ``zfill ("56", 1) -> "56"`` 
+     * ``zfill ("56", 5) -> "00056"``
+     * ``zfill ("56", 2) -> "56"``
+     * ``zfill ("56", 1) -> "56"``
      *
      * @param str   source string
      * @param width target width
@@ -167,10 +167,9 @@ namespace Cassette {
     public static string zfill (string str, int width) {
         if (str.length >= width) {
             return str;
-        } else {
-            int padding = width - str.length;
-            return string.nfill (padding, '0') + str;
         }
+        int padding = width - str.length;
+        return string.nfill (padding, '0') + str;
     }
 
     /**
@@ -220,6 +219,9 @@ namespace Cassette {
         );
 
         Gdk.Display? display = Gdk.Display.get_default ();
+        if (display == null) {
+            return;
+        }
         Gdk.Clipboard clipboard = display.get_clipboard ();
         clipboard.set (typeof (string), url);
         var app = (Application?) GLib.Application.get_default ();
@@ -292,7 +294,7 @@ namespace Cassette {
         if (display != null) {
             Gdk.Clipboard clipboard = display.get_clipboard ();
             clipboard.set_text (url);
-            
+
             var app = (Application?) GLib.Application.get_default ();
             var window = app?.active_window as Window;
             window?.show_message (_("Link copied to clipboard"));
@@ -342,7 +344,7 @@ namespace Cassette {
 
     /**
      * Function to create a filled set from range.
-     * ``range_set (1, 6, 1) -> {1, 2, 3, 4, 5}`` 
+     * ``range_set (1, 6, 1) -> {1, 2, 3, 4, 5}``
      *
      * @param start starting value
      * @param end   target value
@@ -360,7 +362,7 @@ namespace Cassette {
 
     /**
      * Function to find difference between two sets of integers.
-     * ``difference ({1, 2, 3}, {2, 3, 4}) -> {1}`` 
+     * ``difference ({1, 2, 3}, {2, 3, 4}) -> {1}``
      *
      * @param set_1 first set
      * @param set_2 second set
@@ -370,7 +372,7 @@ namespace Cassette {
     public static Gee.HashSet<int> difference (Gee.HashSet<int> set_1, Gee.HashSet<int> set_2) {
         var out_set = new Gee.HashSet<int> ();
         foreach (int el in set_1) {
-            if (!(el in set_2)) {
+            if (!set_2.contains (el)) {
                 out_set.add (el);
             }
         }
@@ -387,13 +389,14 @@ namespace Cassette {
     public static string get_context_type (HasTracks yam_object) {
         if (yam_object is YaMAPI.Playlist) {
             return "playlist";
-        } else if (yam_object is YaMAPI.Album) {
-            return "album";
-        } else if (yam_object is YaMAPI.Artist) {
-            return "artist";
-        } else {
-            return "various";
         }
+        if (yam_object is YaMAPI.Album) {
+            return "album";
+        }
+        if (yam_object is YaMAPI.Artist) {
+            return "artist";
+        }
+        return "various";
     }
 
     /**
@@ -430,13 +433,13 @@ namespace Cassette {
     public static string? get_context_description (HasTracks yam_object) {
         if (yam_object is YaMAPI.Playlist) {
             return ((YaMAPI.Playlist) yam_object).title;
-        } else if (yam_object is YaMAPI.Album) {
-            return ((YaMAPI.Album) yam_object).title;
-        } else if (yam_object is YaMAPI.Artist) {
-            return ((YaMAPI.Artist) yam_object).name;
-        } else {
-            return null;
         }
+        if (yam_object is YaMAPI.Album) {
+            return ((YaMAPI.Album) yam_object).title;
+        }
+        if (yam_object is YaMAPI.Artist) {
+            return ((YaMAPI.Artist) yam_object).name;
+        }
+        return null;
     }
 }
-

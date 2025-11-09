@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -38,9 +38,7 @@ public class Cassette.MenuDialog : Adw.Dialog {
             if (value is Gtk.Button) {
                 value.add_css_class ("button-standart-padding");
                 value.add_css_class ("flat");
-                ((Gtk.Button) value).clicked.connect (() => {
-                    close ();
-                });
+                ((Gtk.Button) value).clicked.connect (on_title_button_clicked);
             } else {
                 value.margin_bottom = 5;
                 value.margin_top = 5;
@@ -53,8 +51,14 @@ public class Cassette.MenuDialog : Adw.Dialog {
     }
 
     construct {
-        shrinkable_bin.notify["root-window-is-shrinked"].connect (update_scrolled);
+        shrinkable_bin.notify.connect (on_shrinkable_bin_notify);
         update_scrolled ();
+    }
+
+    void on_shrinkable_bin_notify (ParamSpec pspec) {
+        if (pspec.name == "root-window-is-shrinked") {
+            update_scrolled ();
+        }
     }
 
     void update_scrolled () {
@@ -66,5 +70,8 @@ public class Cassette.MenuDialog : Adw.Dialog {
             follows_content_size = true;
         }
     }
-}
 
+    void on_title_button_clicked () {
+        close ();
+    }
+}

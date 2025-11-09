@@ -21,6 +21,7 @@ template $CassetteWindow : Adw.ApplicationWindow {
       ToggleButton search_toggle_button {
         icon-name: "edit-find-symbolic";
         tooltip-text: _("Search");
+        toggled => $on_search_toggled();
       }
 
       title-widget: Adw.WindowTitle window_title {};

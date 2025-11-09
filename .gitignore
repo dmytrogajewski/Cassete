@@ -18,3 +18,7 @@ po/cassette.pot
 build-dir
 repo
 .flatpak
+
+# Local tools
+tools/vala-lint/
+tools/local_install/

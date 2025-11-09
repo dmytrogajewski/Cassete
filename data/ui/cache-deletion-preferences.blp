@@ -1,0 +1,134 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteCacheDeletionPreferences : Adw.PreferencesRow {
+  Grid {
+    margin-top: 8;
+    margin-bottom: 16;
+    margin-start: 16;
+    margin-end: 16;
+    column-homogeneous: true;
+    row-spacing: 16;
+    column-spacing: 32;
+
+    Label {
+      css-classes: ["title-4"];
+      label: _("Dirs size:");
+      halign: start;
+
+      layout {
+        column: 0;
+        row: 0;
+        column-span: 2;
+      }
+    }
+
+    Label {
+      css-classes: ["title-3"];
+      label: _("Cache");
+      halign: start;
+
+      layout {
+        column: 0;
+        row: 1;
+      }
+    }
+
+    Stack temp_stack {
+      layout {
+        column: 0;
+        row: 2;
+      }
+
+      StackPage {
+        name: "loading";
+        child: Spinner temp_spinner {};
+      }
+
+      StackPage {
+        name: "ready";
+        child: Box {
+          spacing: 8;
+          orientation: vertical;
+
+          Label temp_size_label {
+            css-classes: ["title-1"];
+          }
+
+          Label temp_type_label {
+            css-classes: ["title-5"];
+          }
+
+          Separator {
+            css-classes: ["spacer"];
+          }
+
+          Button temp_delete_button {
+            css-classes: ["destructive-action"];
+            clicked => $on_temp_delete_button_clicked();
+
+            Adw.ButtonContent {
+              icon-name: "user-trash-symbolic";
+              label: _("Clear");
+            }
+          }
+        };
+      }
+    }
+
+    Label {
+      css-classes: ["title-3"];
+      label: _("Data");
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 1;
+      }
+    }
+
+    Stack perm_stack {
+      layout {
+        column: 1;
+        row: 2;
+      }
+
+      StackPage {
+        name: "loading";
+        child: Spinner perm_spinner {};
+      }
+
+      StackPage {
+        name: "ready";
+        child: Box {
+          spacing: 8;
+          orientation: vertical;
+
+          Label perm_size_label {
+            css-classes: ["title-1"];
+          }
+
+          Label perm_type_label {
+            css-classes: ["title-5"];
+          }
+
+          Separator {
+            css-classes: ["spacer"];
+          }
+
+          Button perm_delete_button {
+            css-classes: ["destructive-action"];
+            tooltip-text: _("Move to cache");
+            clicked => $on_perm_delete_button_clicked();
+
+            Adw.ButtonContent {
+              icon-name: "user-trash-symbolic";
+              label: _("Move");
+            }
+          }
+        };
+      }
+    }
+  }
+}
+

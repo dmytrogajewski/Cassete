@@ -16,6 +16,7 @@ template $CassettePlayerBar : Adw.Bin {
       halign: fill;
       hexpand: true;
       tooltip-text: _("Show track info");
+      clicked => $on_track_detailed_button_clicked();
 
       $CassetteTrackCarousel track_carousel {
         interactive: false;
@@ -124,6 +125,7 @@ template $CassettePlayerBar : Adw.Bin {
           Scale slider {
             hexpand: true;
             orientation: horizontal;
+            change-value => $on_slider_change_value();
 
             adjustment: Adjustment {
               lower: 0.0;
@@ -156,11 +158,20 @@ template $CassettePlayerBar : Adw.Bin {
         content-type: track;
       }
 
+      Label hq_indicator {
+        css-classes: ["caption"];
+        label: "HQ";
+        valign: center;
+        visible: false;
+        tooltip-text: _("High quality audio");
+      }
+
       Button flow_settings_button {
         css-classes: ["flat"];
         valign: center;
         icon-name: "music-note-symbolic";
         tooltip-text: _("Show wave settings");
+        clicked => $on_flow_settings_button_clicked();
       }
 
       Button queue_show_button {
@@ -168,6 +179,7 @@ template $CassettePlayerBar : Adw.Bin {
         valign: center;
         icon-name: "music-queue-symbolic";
         tooltip-text: _("Show playback queue");
+        clicked => $on_queue_show_button_clicked();
       }
 
       $CassetteTrackOptionsButton track_options_button {

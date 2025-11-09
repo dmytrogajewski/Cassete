@@ -1,0 +1,142 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteAlbumView : $CassetteBaseView {
+  child: ScrolledWindow scrolled_window {
+    hexpand: true;
+    propagate-natural-height: true;
+    hscrollbar-policy: never;
+
+    child: Adw.Clamp {
+      hexpand: true;
+      margin-top: 16;
+      margin-bottom: 16;
+      margin-start: 16;
+      margin-end: 16;
+      maximum-size: 1000;
+
+      child: Box main_box {
+        hexpand: true;
+        orientation: vertical;
+        spacing: 16;
+
+        Box {
+          orientation: horizontal;
+          spacing: 12;
+          margin-bottom: 8;
+
+          Button back_button {
+            css-classes: ["flat"];
+            icon-name: "go-previous-symbolic";
+            tooltip-text: _("Go back");
+            halign: start;
+            valign: center;
+            clicked => $on_back_button_clicked();
+          }
+        }
+
+        Box {
+          valign: center;
+          vexpand: false;
+          spacing: 10;
+          orientation: horizontal;
+
+          $CassetteCoverImage cover_image {
+            cover-size: 200;
+            image-widget-size: 200;
+            hexpand: false;
+            vexpand: false;
+            valign: start;
+            halign: start;
+          }
+
+          Box {
+            vexpand: false;
+            spacing: 4;
+            orientation: vertical;
+            margin-start: 8;
+
+            Box {
+              Box {
+                Label {
+                  css-classes: ["title-3"];
+                  margin-end: 20;
+                  justify: left;
+                  label: _("Album");
+                  halign: start;
+                  hexpand: true;
+                }
+
+                Label duration_label {
+                  css-classes: ["dim-label"];
+                  margin-end: 10;
+                  hexpand: false;
+                  halign: end;
+                }
+              }
+            }
+
+            Box {
+              spacing: 12;
+
+              Box {
+                orientation: vertical;
+                spacing: 4;
+
+                Label album_name_label {
+                  css-classes: ["title-1"];
+                  halign: start;
+                  justify: left;
+                  wrap: true;
+                }
+
+                Label album_artist_label {
+                  css-classes: ["body"];
+                  halign: start;
+                  justify: left;
+                  wrap: true;
+                }
+
+                Label album_year_label {
+                  css-classes: ["caption"];
+                  halign: start;
+                }
+              }
+            }
+
+            Label album_status {
+              css-classes: ["caption"];
+              halign: start;
+              wrap: true;
+              visible: false;
+            }
+
+            Box {
+              margin-bottom: 2;
+              spacing: 8;
+              vexpand: true;
+              valign: end;
+
+              Button play_button {
+                css-classes: ["suggested-action", "pill"];
+                vexpand: false;
+                valign: center;
+                clicked => $on_play_button_clicked();
+
+                $CassettePlayMarkContext play_mark_context {
+                  css-classes: ["suggested-action", "pill"];
+                  context-type: "album";
+                }
+              }
+
+              $CassetteLikeButton like_button {
+                css-classes: ["flat"];
+                object-content-type: "album";
+              }
+            }
+          }
+        }
+      };
+    };
+  };
+}

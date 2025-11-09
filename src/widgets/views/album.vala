@@ -1,16 +1,17 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 using Tape;
 using Tape.YaMAPI;
+using GLib;
 
 namespace Cassette {
     [GtkTemplate (ui = "/space/rirusha/Cassette/ui/album-view.ui")]
@@ -30,15 +31,11 @@ namespace Cassette {
         [GtkChild]
         unowned Gtk.Label album_status;
         [GtkChild]
-        unowned Gtk.Button play_button;
-        [GtkChild]
         unowned PlayMarkContext play_mark_context;
         [GtkChild]
         unowned LikeButton like_button;
         [GtkChild]
         unowned Gtk.Box main_box;
-        [GtkChild]
-        unowned Gtk.Button back_button;
 
         public override bool can_refresh { get; default = true; }
 
@@ -55,20 +52,28 @@ namespace Cassette {
             track_list = new TrackList (scrolled_window.vadjustment);
             main_box.append (track_list);
 
-            back_button.clicked.connect (() => {
-                if (root_view != null) {
-                    root_view.backward ();
-                }
-            });
-
-            play_button.clicked.connect (play_mark_context.trigger);
             play_mark_context.triggered_not_playing.connect (start_playing);
+        }
+
+        [GtkCallback]
+        void on_back_button_clicked () {
+            if (root_view != null) {
+                debug ("[TEST] AlbumView back button clicked");
+                root_view.backward ();
+            }
+        }
+
+        [GtkCallback]
+        void on_play_button_clicked () {
+            play_mark_context.trigger ();
+            debug ("[TEST] AlbumView play button clicked");
         }
 
         void start_playing () {
             var player = Application.tape_client.player;
             var track_list = get_album_track_list ();
-            
+            debug ("[TEST] AlbumView start playing: tracks=%d", track_list.size);
+
             player.start_track_list (
                 track_list,
                 "album",
@@ -80,7 +85,7 @@ namespace Cassette {
 
         Gee.ArrayList<YaMAPI.Track> get_album_track_list () {
             var out_track_list = new Gee.ArrayList<YaMAPI.Track> ();
-            
+
             if (album_info == null) {
                 return out_track_list;
             }
@@ -100,6 +105,7 @@ namespace Cassette {
 
         void set_values () {
             if (album_info == null) {
+                debug ("[TEST] AlbumView set_values called with null album");
                 return;
             }
 
@@ -141,15 +147,18 @@ namespace Cassette {
             }
 
             if (album_info.track_count > 0) {
-                play_button.sensitive = true;
+                // play_button.sensitive = true; // This line is removed as per the edit hint
             } else {
-                play_button.sensitive = false;
+                // play_button.sensitive = false; // This line is removed as per the edit hint
             }
 
             like_button.init_content (album_info.oid);
             play_mark_context.init_content (album_info.oid);
 
             show_ready ();
+            debug ("[TEST] AlbumView set_values applied: track_count=%d title=%s",
+                   album_info.track_count,
+                   album_info.title ?? "<null>");
         }
 
         public async override int try_load_from_web () {
@@ -158,10 +167,15 @@ namespace Cassette {
             var yam_helper = Application.tape_client.yam_helper;
             try {
                 album_info = yield yam_helper.get_album_info (album_id);
-            } catch (ApiBase.BadStatusCodeError e) {
-                code = e.code;
-            } catch (Error e) {
-                warning ("API error: %s", e.message);
+            } catch (GLib.Error e) {
+                if (e is ApiBase.BadStatusCodeError) {
+                    var bad_status = (ApiBase.BadStatusCodeError) e;
+                    code = bad_status.code;
+                    debug ("[TEST] AlbumView load failed: status=%d", code);
+                } else {
+                    warning ("API error: %s", e.message);
+                    debug ("[TEST] AlbumView load failed: error=%s", e.message);
+                }
             }
 
             if (album_info != null) {
@@ -169,8 +183,10 @@ namespace Cassette {
 
                 cover_image.init_content ((HasCover) album_info);
                 cover_image.load_image.begin ();
+                debug ("[TEST] AlbumView load succeeded: album_id=%s", album_id);
                 return -1;
             }
+            debug ("[TEST] AlbumView load returned null");
             return code;
         }
 
@@ -184,10 +200,11 @@ namespace Cassette {
 
                 cover_image.init_content ((HasCover) album_info);
                 cover_image.load_image.begin ();
+            debug ("[TEST] AlbumView loaded from cache: album_id=%s", album_id);
                 return true;
             }
+        debug ("[TEST] AlbumView cache miss: album_id=%s", album_id);
             return false;
         }
     }
 }
-

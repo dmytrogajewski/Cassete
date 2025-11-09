@@ -21,7 +21,7 @@ public class Cassette.PlaylistCreateButton : Adw.Bin {
     }
 
     construct {
-        real_button.clicked.connect (create_playlist_button_clicked_async);
+        real_button.tooltip_text = _("Create playlist");
         var app = (Application?) GLib.Application.get_default () as Application;
         if (app != null) {
             app.application_state_changed.connect (application_state_changed);
@@ -42,6 +42,11 @@ public class Cassette.PlaylistCreateButton : Adw.Bin {
             default:
                 break;
         }
+    }
+
+    [GtkCallback]
+    void on_real_button_clicked () {
+        create_playlist_button_clicked_async.begin ();
     }
 
     async void create_playlist_button_clicked_async () {

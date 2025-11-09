@@ -1,24 +1,25 @@
 /*
  * Copyright (C) 2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see
  * <https://www.gnu.org/licenses/gpl-3.0-standalone.html>.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 using Tape;
+using GLib;
 
 [GtkTemplate (ui = "/space/rirusha/Cassette/ui/auth.ui")]
 public sealed class Cassette.Auth : Loadable {
@@ -44,6 +45,7 @@ public sealed class Cassette.Auth : Loadable {
         auth_status_page.description = _("You need your Yandex music token to login.");
 #endif
 
+        debug ("[TEST] Auth construct: initiating auto login");
         try_auth.begin (null);
 
         if (Config.IS_DEVEL) {
@@ -64,12 +66,14 @@ public sealed class Cassette.Auth : Loadable {
         win_stack.add_named (main_content, "main");
         win_stack.visible_child_name = "main";
         is_loading = false;
+        debug ("[TEST] Auth transitioned to main content");
     }
 
     public void to_auth () {
         win_stack.visible_child_name = "auth";
         clear_main ();
         is_loading = false;
+        debug ("[TEST] Auth transitioned to login form");
     }
 
     void to_cant_use (CantUseError e) {
@@ -80,6 +84,7 @@ public sealed class Cassette.Auth : Loadable {
         }
         clear_main ();
         is_loading = false;
+        debug ("[TEST] Auth transition to can't use screen: code=%s", e.code.to_string ());
     }
 
     [GtkCallback]
@@ -87,48 +92,55 @@ public sealed class Cassette.Auth : Loadable {
 #if WITH_WEBKIT
         var dialog = new WebkitAuthDialog (Cassette.Application.tape_client.cachier.storager.cookies_file);
         dialog.present (this);
-        dialog.success.connect (() => {
-            try_auth.begin (null);
-        });
+        dialog.success.connect (on_auth_dialog_success);
         is_loading = true;
+        debug ("[TEST] Auth WebKit dialog opened");
 #endif
     }
 
     [GtkCallback]
     void on_token_apply () {
         is_loading = true;
+        debug ("[TEST] Auth token submit clicked");
         try_auth.begin (token_login.text);
     }
 
     async void try_auth (string? token) {
         try {
             if (yield Cassette.Application.tape_client.init (token)) {
+                debug ("[TEST] Auth success");
                 to_main ();
             } else {
                 if (token != null) {
                     activate_action_variant ("app.show-message", _("Failed to login. Probably wrong token"));
                 }
                 to_auth ();
+                debug ("[TEST] Auth failed: init returned false");
             }
         } catch (ApiBase.BadStatusCodeError e) {
             activate_action_variant ("app.show-message", _("Bad status code: %i").printf (e.code));
             to_auth ();
+            debug ("[TEST] Auth failed: bad status code %d", e.code);
         } catch (CantUseError e) {
             to_cant_use (e);
+            debug ("[TEST] Auth failed: CantUseError code=%s", e.code.to_string ());
         } catch (ApiBase.SoupError e) {
             activate_action_variant ("app.show-message", _("Connection problems"));
             to_auth ();
+            debug ("[TEST] Auth failed: SoupError %s", e.message);
         }
     }
 
     [GtkCallback]
     void on_open_link () {
         new Gtk.UriLauncher ("https://yandex-music.readthedocs.io/en/main/token.html").launch.begin (null, null);
+        debug ("[TEST] Auth token help link opened");
     }
 
     [GtkCallback]
     void on_to_auth_clicked () {
         Tape.Storager.remove_file.begin (Application.tape_client.cachier.storager.cookies_file, to_auth);
+        debug ("[TEST] Auth reset to login requested");
     }
 
     public void log_out () {
@@ -150,20 +162,36 @@ public sealed class Cassette.Auth : Loadable {
             return;
         }
 
-        dialog.response.connect ((dialog, response) => {
-            if (response == "logout") {
-                force_log_out ();
-            }
-        });
+        dialog.response.connect (on_logout_dialog_response);
 
         dialog.present (window);
+        debug ("[TEST] Auth logout dialog opened");
     }
 
     public void force_log_out () {
         var storager = Application.tape_client.cachier.storager;
-        storager.clear_user_data.begin (true, false, (obj, res) => {
-            storager.clear_user_data.end (res);
-            ((Application) GLib.Application.get_default ()).quit ();
-        });
+        storager.clear_user_data.begin (true, false, on_clear_user_data_complete);
+        debug ("[TEST] Auth force logout initiated");
+    }
+
+    void on_auth_dialog_success () {
+        try_auth.begin (null);
+        debug ("[TEST] Auth WebKit dialog success");
+    }
+
+    void on_logout_dialog_response (Adw.AlertDialog dialog, string response) {
+        if (response == "logout") {
+            force_log_out ();
+            debug ("[TEST] Auth logout confirmed");
+        } else {
+            debug ("[TEST] Auth logout cancelled");
+        }
+    }
+
+    void on_clear_user_data_complete (Object? obj, AsyncResult res) {
+        var storager = Application.tape_client.cachier.storager;
+        storager.clear_user_data.end (res);
+        ((Application) GLib.Application.get_default ()).quit ();
+        debug ("[TEST] Auth user data cleared and application quit");
     }
 }

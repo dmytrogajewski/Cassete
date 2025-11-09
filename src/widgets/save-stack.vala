@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -30,7 +30,7 @@ public class Cassette.SaveStack : Adw.Bin, Initable {
 
     public bool hide_when_none { get; construct; default = false; }
 
-    ulong con_id = -1;
+    ulong? con_id = null;
 
     public SaveStack () {
         Object ();
@@ -55,30 +55,33 @@ public class Cassette.SaveStack : Adw.Bin, Initable {
         // Tooltip provides accessible name for screen readers
         tooltip_text = _("Save status");
 
-        Application.app_settings.changed.connect ((key) => {
-            if (content_id == null) {
-                return;
-            }
-
-            if (key == "show-save-stack" || key == "show-temp-save-mark") {
-                cache_state_changed (Application.tape_client.cachier.controller.get_content_cache_state (content_type, content_id));
-            }
-        });
+        Application.app_settings.changed.connect (on_app_settings_changed);
 
         save_spin.tooltip_text = _("%s saving…").printf (get_content_name ());
         temp_mark_image.tooltip_text = _("%s cached").printf (get_content_name ());
         perm_mark_image.tooltip_text = _("%s saved").printf (get_content_name ());
 
-        if (hide_when_none == true) {
+        if (hide_when_none) {
             visible = false;
+            save_stack.notify.connect (on_save_stack_notify);
+        }
+    }
 
-            save_stack.notify["visible-child-name"].connect (() => {
-                if (save_stack.visible_child_name == "none") {
-                    visible = false;
-                } else {
-                    visible = true;
-                }
-            });
+    void on_app_settings_changed (string key) {
+        if (content_id == null) {
+            return;
+        }
+
+        if (key == "show-save-stack" || key == "show-temp-save-mark") {
+            cache_state_changed (
+                Application.tape_client.cachier.controller.get_content_cache_state (
+                    content_type, content_id));
+        }
+    }
+
+    void on_save_stack_notify (ParamSpec pspec) {
+        if (pspec.name == "visible-child-name") {
+            visible = save_stack.visible_child_name != "none";
         }
     }
 
@@ -87,16 +90,21 @@ public class Cassette.SaveStack : Adw.Bin, Initable {
     }
 
     public void init_content (string content_id) {
-        this.content_id = content_id;
-
-        if (con_id != -1) {
-            Application.tape_client.cachier.controller.content_cache_state_changed.disconnect (on_content_cache_state_changed);
-            con_id = -1;
+        // Disconnect previous handler if any
+        if (con_id != null) {
+            Application.tape_client.cachier.controller.content_cache_state_changed.disconnect (
+                on_content_cache_state_changed);
+            con_id = null;
         }
 
-        con_id = Application.tape_client.cachier.controller.content_cache_state_changed.connect (on_content_cache_state_changed);
+        this.content_id = content_id;
 
-        cache_state_changed (Application.tape_client.cachier.controller.get_content_cache_state (content_type, content_id));
+        con_id = Application.tape_client.cachier.controller.content_cache_state_changed.connect (
+            on_content_cache_state_changed);
+
+        cache_state_changed (
+            Application.tape_client.cachier.controller.get_content_cache_state (
+                content_type, content_id));
     }
 
     void on_content_cache_state_changed (Tape.ContentType content_type, string content_id, Tape.CacheingState state) {
@@ -105,7 +113,7 @@ public class Cassette.SaveStack : Adw.Bin, Initable {
         }
     }
 
-    void cache_state_changed (owned Tape.CacheingState state) {
+    void cache_state_changed (Tape.CacheingState state) {
         if (!Application.app_settings.get_boolean ("show-save-stack")) {
             state = Tape.CacheingState.NONE;
         }
@@ -133,5 +141,13 @@ public class Cassette.SaveStack : Adw.Bin, Initable {
                 break;
         }
     }
-}
 
+    protected override void dispose () {
+        if (con_id != null) {
+            Application.tape_client.cachier.controller.content_cache_state_changed.disconnect (
+                on_content_cache_state_changed);
+            con_id = null;
+        }
+        base.dispose ();
+    }
+}

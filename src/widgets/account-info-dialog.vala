@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -39,9 +39,8 @@ namespace Cassette {
         async void load_avatar () {
             avatar.text = account_info.public_name;
             avatar.size = 200;
-            
-            var cachier = Application.tape_client.cachier;
-            var image_bytes = yield cachier.get_image (account_info, 200);
+
+            var image_bytes = yield Cachier.get_image (account_info, 200);
             if (image_bytes != null) {
                 try {
                     var loader = new Gdk.PixbufLoader ();
@@ -58,4 +57,3 @@ namespace Cassette {
         }
     }
 }
-

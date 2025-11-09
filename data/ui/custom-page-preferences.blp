@@ -1,0 +1,96 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassetteCustomPagePreferences : Adw.PreferencesRow {
+  Grid {
+    margin-top: 8;
+    margin-bottom: 8;
+    margin-start: 8;
+    margin-end: 8;
+    row-homogeneous: true;
+    row-spacing: 8;
+    column-spacing: 8;
+
+    Label {
+      label: _("Title: ");
+      halign: start;
+
+      layout {
+        column: 0;
+        row: 0;
+      }
+    }
+
+    Entry page_title_entry {
+      css-classes: ["flat"];
+      hexpand: true;
+
+      layout {
+        column: 1;
+        row: 0;
+      }
+    }
+
+    Label {
+      label: _("Icon: ");
+      halign: start;
+
+      layout {
+        column: 0;
+        row: 1;
+      }
+    }
+
+    Entry page_icon_name_entry {
+      css-classes: ["flat"];
+      hexpand: true;
+
+      layout {
+        column: 1;
+        row: 1;
+      }
+    }
+
+    Separator {
+      css-classes: ["spacer"];
+
+      layout {
+        column: 2;
+        row: 0;
+        row-span: 2;
+      }
+    }
+
+    Button page_save_button {
+      icon-name: "cache-perm-symbolic";
+      halign: end;
+      valign: center;
+      hexpand: false;
+      tooltip-text: _("Save page");
+      clicked => $on_page_save_button_clicked();
+
+      layout {
+        column: 3;
+        row: 0;
+        row-span: 2;
+      }
+    }
+
+    Button page_remove_button {
+      css-classes: ["destructive-action"];
+      icon-name: "user-trash-symbolic";
+      halign: end;
+      valign: center;
+      hexpand: false;
+      tooltip-text: _("Remove page");
+      clicked => $on_page_remove_button_clicked();
+
+      layout {
+        column: 4;
+        row: 0;
+        row-span: 2;
+      }
+    }
+  }
+}
+

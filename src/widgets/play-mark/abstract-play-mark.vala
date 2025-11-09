@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -38,11 +38,15 @@ public abstract class Cassette.PlayMark : Adw.Bin {
 
         // Set accessible name based on playback state
         update_accessible_name ();
-        notify["is-playing"].connect (() => {
+        notify.connect (on_play_mark_notify);
+        on_is_playing_notify ();
+    }
+
+    void on_play_mark_notify (ParamSpec pspec) {
+        if (pspec.name == "is-playing") {
             on_is_playing_notify ();
             update_accessible_name ();
-        });
-        on_is_playing_notify ();
+        }
     }
 
     void update_accessible_name () {
@@ -77,4 +81,3 @@ public abstract class Cassette.PlayMark : Adw.Bin {
         is_current_playing = false;
     }
 }
-

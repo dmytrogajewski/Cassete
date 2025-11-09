@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -44,56 +44,75 @@ public abstract class Cassette.Reactable : Gtk.Frame {
 
     construct {
         var gs_hover = new Gtk.EventControllerMotion ();
-        gs_hover.enter.connect (() => {
-            add_css_class (css_class_name_hover);
-        });
-        gs_hover.leave.connect (() => {
-            remove_css_class (css_class_name_hover);
-        });
+        gs_hover.enter.connect (on_hover_enter);
+        gs_hover.leave.connect (on_hover_leave);
         add_controller (gs_hover);
 
         var gs_active = new Gtk.GestureClick ();
-        gs_active.pressed.connect (() => {
-            add_css_class (css_class_name_active);
-        });
-        gs_active.stopped.connect (() => {
-            remove_css_class (css_class_name_active);
-        });
-        gs_active.released.connect (() => {
-            remove_css_class (css_class_name_active);
-        });
+        gs_active.pressed.connect (on_active_pressed);
+        gs_active.stopped.connect (on_active_stopped);
+        gs_active.released.connect (on_active_released);
         add_controller (gs_active);
 
         var gs_playing_hover = new Gtk.EventControllerMotion ();
-        gs_playing_hover.enter.connect (() => {
-            if (is_current_playing) {
-                add_css_class (css_class_name_playing_hover);
-            }
-        });
-        gs_playing_hover.leave.connect (() => {
-            if (is_current_playing) {
-                remove_css_class (css_class_name_playing_hover);
-            }
-        });
+        gs_playing_hover.enter.connect (on_playing_hover_enter);
+        gs_playing_hover.leave.connect (on_playing_hover_leave);
         add_controller (gs_playing_hover);
 
         var gs_playing_active = new Gtk.GestureClick ();
-        gs_playing_active.pressed.connect (() => {
-            if (is_current_playing) {
-                add_css_class (css_class_name_playing_active);
-            }
-        });
-        gs_playing_active.stopped.connect (() => {
-            if (is_current_playing) {
-                remove_css_class (css_class_name_playing_active);
-            }
-        });
-        gs_playing_active.released.connect (() => {
-            if (is_current_playing) {
-                remove_css_class (css_class_name_playing_active);
-            }
-        });
+        gs_playing_active.pressed.connect (on_playing_active_pressed);
+        gs_playing_active.stopped.connect (on_playing_active_stopped);
+        gs_playing_active.released.connect (on_playing_active_released);
         add_controller (gs_playing_active);
     }
-}
 
+    void on_hover_enter () {
+        add_css_class (css_class_name_hover);
+    }
+
+    void on_hover_leave () {
+        remove_css_class (css_class_name_hover);
+    }
+
+    void on_active_pressed () {
+        add_css_class (css_class_name_active);
+    }
+
+    void on_active_stopped () {
+        remove_css_class (css_class_name_active);
+    }
+
+    void on_active_released () {
+        remove_css_class (css_class_name_active);
+    }
+
+    void on_playing_hover_enter () {
+        if (is_current_playing) {
+            add_css_class (css_class_name_playing_hover);
+        }
+    }
+
+    void on_playing_hover_leave () {
+        if (is_current_playing) {
+            remove_css_class (css_class_name_playing_hover);
+        }
+    }
+
+    void on_playing_active_pressed () {
+        if (is_current_playing) {
+            add_css_class (css_class_name_playing_active);
+        }
+    }
+
+    void on_playing_active_stopped () {
+        if (is_current_playing) {
+            remove_css_class (css_class_name_playing_active);
+        }
+    }
+
+    void on_playing_active_released () {
+        if (is_current_playing) {
+            remove_css_class (css_class_name_playing_active);
+        }
+    }
+}

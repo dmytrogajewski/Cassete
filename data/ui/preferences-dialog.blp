@@ -1,0 +1,128 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $CassettePreferencesDialog : Adw.PreferencesDialog {
+  Adw.PreferencesPage {
+    title: C_("preference dialog", "Main");
+    icon-name: "user-home-symbolic";
+
+    Adw.PreferencesGroup {
+      title: C_("preference dialog", "General");
+
+      Adw.SwitchRow is_hq_switch {
+        title: C_("preference dialog", "Enable high quality audio");
+        subtitle: C_("preference dialog", "Attention! If the track was downloaded in low quality, and after the download is enabled in high quality, the audio will not be reloaded");
+      }
+
+      Adw.SwitchRow add_tracks_to_start_switch {
+        title: C_("preference dialog", "Add track on top of playlist");
+        subtitle: C_("preference dialog", "Will the track be added to the playlist as the first or as the last");
+      }
+
+      Adw.SwitchRow show_playing_track_notif_switch {
+        title: C_("preference dialog", "Show 'Playing now' notification");
+        subtitle: C_("preference dialog", "Show a notification when switching a track");
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: C_("preference dialog", "Show additional marks");
+      description: C_("preference dialog", "Additional marks display additional information about the track");
+
+      Adw.SwitchRow show_save_stack_switch {
+        title: C_("preference dialog", "Show save mark");
+        subtitle: C_("preference dialog", "Show a label with information about the caching status of the track");
+      }
+
+      Adw.SwitchRow show_temp_save_stack_switch {
+        title: C_("preference dialog", "Show cache mark");
+        subtitle: C_("preference dialog", "Show a mark about saving a track to the cache");
+      }
+
+      Adw.SwitchRow show_replaced_mark_switch {
+        title: C_("preference dialog", "Show replaced mark");
+        subtitle: C_("preference dialog", "Show a mark that shows that the track has been replaced");
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: C_("preference dialog", "Tracks visibility");
+      description: C_("preference dialog", "Show special tracks in track lists. Filter doesn't work when searching in track list");
+
+      Adw.SwitchRow available_visible_switch {
+        title: C_("preference dialog", "Show unavailable content");
+        subtitle: C_("preference dialog", "Show tracks that are not available in the service. You can't listen to them");
+      }
+
+      Adw.SwitchRow child_visible_switch {
+        title: C_("preference dialog", "Show content suitable for children");
+        subtitle: C_("preference dialog", "Show content that is specific to children");
+      }
+
+      Adw.SwitchRow explicit_visible_switch {
+        title: C_("preference dialog", "Show explicit content");
+        subtitle: C_("preference dialog", "Show content that has age restrictions");
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: C_("preference dialog", "Other");
+
+      Adw.SwitchRow debug_mode_switch {
+        title: C_("preference dialog", "Enable Debug-Mode");
+        subtitle: C_("preference dialog", "Enable logging of additional information useful for error detection");
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: C_("preference dialog", "Experimental");
+      description: C_("preference dialog", "Parameters that test anything and may be removed in future releases");
+
+      Adw.SwitchRow use_only_dialogs_switch {
+        title: C_("preference dialog", "Use only bottom sheet menus");
+        subtitle: C_("preference dialog", "Test preference for bottom sheet menu");
+      }
+    }
+  }
+
+  Adw.PreferencesPage {
+    title: C_("preference dialog", "Pages");
+    icon-name: "view-paged-symbolic";
+
+    Adw.PreferencesGroup {
+      title: C_("preference dialog", "Static pages");
+      description: C_("preference dialog", "Here you can show or hide static pages. They will always be displayed on the left side of the header.");
+
+      Adw.SwitchRow show_main_switch {
+        title: C_("preference dialog", "Show 'Main' page");
+      }
+
+      Adw.SwitchRow show_liked_switch {
+        title: C_("preference dialog", "Show 'Liked' page");
+      }
+
+      Adw.SwitchRow show_playlists_switch {
+        title: C_("preference dialog", "Show 'Playlists' page");
+      }
+    }
+
+    $CassetteCustomPagesPreferences custom_pages_preferences {}
+  }
+
+  Adw.PreferencesPage {
+    title: C_("preference dialog", "Cache");
+    icon-name: "user-trash-symbolic";
+
+    Adw.PreferencesGroup {
+      title: C_("preference dialog", "Cache managing");
+      description: C_("preference dialog", "Here you can see application memory usage, delete all cache from cache folder and control downloading cache to disk");
+
+      Adw.SwitchRow can_cache_switch {
+        title: C_("preference dialog", "Cache content");
+        subtitle: C_("preference dialog", "For better performance. Over time, it starts to take up a lot of space. So far, manual cleaning is required. If enabled, the application will cache all content to cache dir for better performance, otherwise, the application will load content only when caching objects (such as playlists or albums). Disabling the parameter does not delete already downloaded content");
+      }
+
+      $CassetteCacheDeletionPreferences deletion_preferences {}
+    }
+  }
+}

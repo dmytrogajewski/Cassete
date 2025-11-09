@@ -5,6 +5,8 @@ using GLib;
 
 [CCode (cheader_filename = "GL/gl.h", cprefix = "")]
 namespace GL {
+    // vala-lint-disable line-length
+    // vala-lint-disable naming-convention
 
     public const int GL_VERTEX_SHADER = 0x8B31;
     public const int GL_FRAGMENT_SHADER = 0x8B30;
@@ -19,7 +21,7 @@ namespace GL {
     [CCode (cname = "glShaderSource")] public extern void glShaderSource (uint shader, int count, [CCode (array_length = false)] string[] strings, int* lengths);
     [CCode (cname = "glCompileShader")] public extern void glCompileShader (uint shader);
     [CCode (cname = "glGetShaderiv")] public extern void glGetShaderiv (uint shader, uint pname, out int param);
-    [CCode (cname = "glGetShaderInfoLog")] public extern void glGetShaderInfoLog (uint shader, int bufSize, out int length, [CCode (array_length = false)] char[] infoLog);
+    [CCode (cname = "glGetShaderInfoLog")] public extern void glGetShaderInfoLog (uint shader, int bufSize, out int length, [CCode (array_length = false)] char[] infoLog); // vala-lint-disable line-length
     [CCode (cname = "glCreateProgram")] public extern uint glCreateProgram ();
     [CCode (cname = "glAttachShader")] public extern void glAttachShader (uint program, uint shader);
     [CCode (cname = "glLinkProgram")] public extern void glLinkProgram (uint program);
@@ -35,7 +37,7 @@ namespace GL {
     [CCode (cname = "glBindBuffer")] public extern void glBindBuffer (uint target, uint buffer);
     [CCode (cname = "glBufferData")] public extern void glBufferData (uint target, long size, [CCode (array_length = false)] float[] data, uint usage);
     [CCode (cname = "glEnableVertexAttribArray")] public extern void glEnableVertexAttribArray (uint index);
-    [CCode (cname = "glVertexAttribPointer")] public extern void glVertexAttribPointer (uint index, int size, uint type, bool normalized, int stride, void* pointer);
+    [CCode (cname = "glVertexAttribPointer")] public extern void glVertexAttribPointer (uint index, int size, uint type, bool normalized, int stride, void* pointer); // vala-lint-disable line-length
     [CCode (cname = "glDrawArrays")] public extern void glDrawArrays (uint mode, int first, int count);
 }
 
@@ -78,10 +80,10 @@ void main() {
     vec2 center = vec2(0.5 * (u_resolution.x / u_resolution.y), 0.5);
     vec2 p = fragCoord / u_resolution.y - center;
     p *= 0.6;
-    
+
     vec3 cl = vec3(0.0);
     float d = 2.5;
-    
+
     for(int i = 0; i <= 5; i++) {
         vec3 p3 = vec3(0.0, 0.0, 5.0) + normalize(vec3(p, -1.0)) * d;
         float rz = map(p3);
@@ -141,8 +143,21 @@ void main() {
         realize.connect (on_realize);
         render.connect (on_render);
         t0 = GLib.get_monotonic_time () / 1e6;
-        map.connect (() => { if (tick_id == 0) tick_id = add_tick_callback (on_tick); });
-        unmap.connect (() => { if (tick_id != 0) { remove_tick_callback (tick_id); tick_id = 0; } });
+        map.connect (on_map);
+        unmap.connect (on_unmap);
+    }
+
+    private void on_map () {
+        if (tick_id == 0) {
+            tick_id = add_tick_callback (on_tick);
+        }
+    }
+
+    private void on_unmap () {
+        if (tick_id != 0) {
+            remove_tick_callback (tick_id);
+            tick_id = 0;
+        }
     }
 
     private void on_realize () {
@@ -216,16 +231,19 @@ void main() {
 
 public int main (string[] args) {
     var app = new Gtk.Application ("com.test.shader", 0);
-    app.activate.connect (() => {
-        var win = app.get_active_window ();
-        if (win == null) {
-            win = new Gtk.ApplicationWindow (app);
-            win.set_default_size (800, 600);
-            win.title = "GLArea Shader Test";
-            win.set_child (new GLTestArea ());
-        }
-        win.present ();
-    });
+    app.activate.connect (on_app_activate);
     return app.run (args);
+}
+
+void on_app_activate () {
+    var app = (Gtk.Application) GLib.Application.get_default ();
+    var win = app.get_active_window ();
+    if (win == null) {
+        win = new Gtk.ApplicationWindow (app);
+        win.set_default_size (800, 600);
+        win.title = "GLArea Shader Test";
+        win.set_child (new GLTestArea ());
+    }
+    win.present ();
 }
 

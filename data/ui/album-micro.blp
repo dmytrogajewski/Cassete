@@ -8,9 +8,10 @@ template $CassetteAlbumMicro : Adw.Bin {
   Adw.Clamp {
     maximum-size: 220;
 
-    Button self {
+    Button root_button {
       has-frame: false;
       css-classes: ["flat", "no-hover-effect"];
+      clicked => $on_clicked();
 
       Box card_box {
         spacing: 8;
@@ -18,7 +19,7 @@ template $CassetteAlbumMicro : Adw.Bin {
         css-classes: ["action-card"]; 
 
         $CassetteCoverImage cover_image {
-          cover-size: big;
+          cover-size: 200;
           image-widget-size: 200;
         }
 

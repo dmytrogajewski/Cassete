@@ -1,17 +1,18 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 using Tape;
 using Tape.YaMAPI;
 using Gee;
+using GLib;
 
 [GtkTemplate (ui = "/space/rirusha/Cassette/ui/sidebar.ui")]
 public class Cassette.Sidebar : ShrinkableBin {
@@ -42,14 +43,17 @@ public class Cassette.Sidebar : ShrinkableBin {
             toolbar_view.content = value;
 
             if (value != null) {
-                value.bind_property ("title", window_title, "title", BindingFlags.DEFAULT | BindingFlags.SYNC_CREATE);
-                value.bind_property ("subtitle", window_title, "subtitle", BindingFlags.DEFAULT | BindingFlags.SYNC_CREATE);
+                value.bind_property ("title", window_title, "title",
+                                     BindingFlags.DEFAULT | BindingFlags.SYNC_CREATE);
+                value.bind_property ("subtitle", window_title, "subtitle",
+                                     BindingFlags.DEFAULT | BindingFlags.SYNC_CREATE);
             }
 
             child_id = value != null ? value.child_id : "";
             is_shown = value != null;
 
             child_changed (value);
+            debug ("[TEST] Sidebar child changed: id=%s shown=%s", child_id, is_shown.to_string ());
         }
     }
 
@@ -64,6 +68,7 @@ public class Cassette.Sidebar : ShrinkableBin {
     }
 
     public void close () {
+        debug ("[TEST] Sidebar close invoked");
         sidebar_child = null;
     }
 
@@ -72,6 +77,7 @@ public class Cassette.Sidebar : ShrinkableBin {
 
         if (track_info.available) {
             sidebar_child = new TrackInfo (track_info);
+            debug ("[TEST] Sidebar showing track info: track_id=%s", track_info.id);
         }
     }
 
@@ -81,9 +87,11 @@ public class Cassette.Sidebar : ShrinkableBin {
         var player = Application.tape_client.player;
         if (player.mode is PlayerFlow && player.mode.context_id == "user:onyourwave") {
             sidebar_child = new WaveSettings ();
+            debug ("[TEST] Sidebar showing wave settings");
         } else {
             child_id = "";
             is_shown = false;
+            debug ("[TEST] Sidebar wave settings unavailable");
         }
     }
 
@@ -93,10 +101,11 @@ public class Cassette.Sidebar : ShrinkableBin {
         var player = Application.tape_client.player;
         if (player.mode is PlayerTrackList) {
             sidebar_child = new PlayerQueue ();
+            debug ("[TEST] Sidebar showing queue");
         } else {
             child_id = "";
             is_shown = false;
+            debug ("[TEST] Sidebar queue unavailable");
         }
     }
 }
-

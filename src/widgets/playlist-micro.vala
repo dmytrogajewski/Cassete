@@ -1,16 +1,17 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 using Tape;
 using Tape.YaMAPI;
+using GLib;
 
 [GtkTemplate (ui = "/space/rirusha/Cassette/ui/playlist-micro.ui")]
 public class Cassette.PlaylistMicro : Adw.Bin {
@@ -18,8 +19,8 @@ public class Cassette.PlaylistMicro : Adw.Bin {
     unowned CoverImage cover_image;
     [GtkChild]
     unowned Gtk.Label playlist_title;
-    [GtkChild]
-    unowned Gtk.Button self;
+    [GtkChild (name = "root_button")]
+    unowned Gtk.Button root_button;
     [GtkChild]
     unowned SaveStack save_stack;
 
@@ -34,51 +35,61 @@ public class Cassette.PlaylistMicro : Adw.Bin {
         Object ();
     }
 
-    construct {
-        if (short_playlist_info != null) {
-            self.clicked.connect (() => {
-                if (playlists_view != null && playlists_view.root_view != null) {
-                    playlists_view.root_view.add_view (new PlaylistView (
-                        short_playlist_info.uid,
-                        short_playlist_info.kind
-                    ));
+        construct {
+            if (short_playlist_info != null) {
+                var yam_helper = Application.tape_client.yam_helper;
+
+                if (short_playlist_info.uid == yam_helper.me.oid) {
+                    yam_helper.playlist_start_delete.connect (on_playlist_start_delete);
+
+                    yam_helper.playlist_stop_delete.connect (on_playlist_stop_delete);
                 }
-            });
 
-            var yam_helper = Application.tape_client.yam_helper;
+                yam_helper.playlist_changed.connect (on_playlist_changed);
 
-            if (short_playlist_info.uid == yam_helper.me.oid) {
-                yam_helper.playlist_start_delete.connect ((kind) => {
-                    if (short_playlist_info.kind == kind) {
-                        sensitive = false;
-                    }
-                });
+                var motion_controller = new Gtk.EventControllerMotion ();
+                root_button.add_controller (motion_controller);
 
-                yam_helper.playlist_stop_delete.connect ((kind) => {
-                    if (short_playlist_info.kind == kind) {
-                        sensitive = true;
-                    }
-                });
+                set_values ();
+
+            } else {
+                sensitive = false;
             }
-
-            yam_helper.playlist_changed.connect ((new_playlist) => {
-                if (new_playlist.oid == short_playlist_info.oid) {
-                    short_playlist_info.cover = new_playlist.cover;
-                    short_playlist_info.title = new_playlist.title;
-
-                    set_values ();
-                }
-            });
-
-            var motion_controller = new Gtk.EventControllerMotion ();
-            add_controller (motion_controller);
-
-            set_values ();
-
-        } else {
-            sensitive = false;
         }
-    }
+
+        [GtkCallback]
+        void on_clicked () {
+            if (playlists_view != null && playlists_view.root_view != null) {
+                debug ("[TEST] PlaylistMicro clicked: uid=%s kind=%s",
+                       short_playlist_info.uid ?? "<null>",
+                       short_playlist_info.kind ?? "<null>");
+                playlists_view.root_view.add_view (new PlaylistView (
+                    short_playlist_info.uid,
+                    short_playlist_info.kind
+                ));
+            }
+        }
+
+        void on_playlist_start_delete (string kind) {
+            if (short_playlist_info.kind == kind) {
+                sensitive = false;
+            }
+        }
+
+        void on_playlist_stop_delete (string kind) {
+            if (short_playlist_info.kind == kind) {
+                sensitive = true;
+            }
+        }
+
+        void on_playlist_changed (YaMAPI.Playlist new_playlist) {
+            if (new_playlist.oid == short_playlist_info.oid) {
+                short_playlist_info.cover = new_playlist.cover;
+                short_playlist_info.title = new_playlist.title;
+
+                set_values ();
+            }
+        }
 
     void set_values () {
         if (short_playlist_info == null) {
@@ -89,7 +100,7 @@ public class Cassette.PlaylistMicro : Adw.Bin {
 
         if (short_playlist_info.owner != null) {
             if (short_playlist_info.owner.uid != yam_helper.me.oid) {
-                self.tooltip_text = _("Owner: %s").printf (short_playlist_info.owner.get_user_name ());
+                root_button.tooltip_text = _("Owner: %s").printf (short_playlist_info.owner.get_user_name ());
             }
         }
 
@@ -109,4 +120,3 @@ public class Cassette.PlaylistMicro : Adw.Bin {
         cover_image.load_image.begin ();
     }
 }
-

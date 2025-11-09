@@ -15,6 +15,8 @@ using Graphene;
 
 [CCode (cheader_filename = "GL/gl.h", cprefix = "")]
 namespace GL {
+    // vala-lint-disable line-length
+    // vala-lint-disable naming-convention
     public const int GL_VERTEX_SHADER = 0x8B31;
     public const int GL_FRAGMENT_SHADER = 0x8B30;
     public const int GL_COMPILE_STATUS = 0x8B81;
@@ -29,12 +31,12 @@ namespace GL {
     [CCode (cname = "glShaderSource")] public extern void glShaderSource (uint shader, int count, [CCode (array_length = false)] string[] strings, int* lengths);
     [CCode (cname = "glCompileShader")] public extern void glCompileShader (uint shader);
     [CCode (cname = "glGetShaderiv")] public extern void glGetShaderiv (uint shader, uint pname, out int param);
-    [CCode (cname = "glGetShaderInfoLog")] public extern void glGetShaderInfoLog (uint shader, int bufSize, out int length, [CCode (array_length = false)] char[] infoLog);
+    [CCode (cname = "glGetShaderInfoLog")] public extern void glGetShaderInfoLog (uint shader, int bufSize, out int length, [CCode (array_length = false)] char[] infoLog); // vala-lint-disable line-length
     [CCode (cname = "glCreateProgram")] public extern uint glCreateProgram ();
     [CCode (cname = "glAttachShader")] public extern void glAttachShader (uint program, uint shader);
     [CCode (cname = "glLinkProgram")] public extern void glLinkProgram (uint program);
     [CCode (cname = "glGetProgramiv")] public extern void glGetProgramiv (uint program, uint pname, out int param);
-    [CCode (cname = "glGetProgramInfoLog")] public extern void glGetProgramInfoLog (uint program, int bufSize, out int length, [CCode (array_length = false)] char[] infoLog);
+    [CCode (cname = "glGetProgramInfoLog")] public extern void glGetProgramInfoLog (uint program, int bufSize, out int length, [CCode (array_length = false)] char[] infoLog); // vala-lint-disable line-length
     [CCode (cname = "glDeleteShader")] public extern void glDeleteShader (uint shader);
     [CCode (cname = "glUseProgram")] public extern void glUseProgram (uint program);
     [CCode (cname = "glGetUniformLocation")] public extern int glGetUniformLocation (uint program, string name);
@@ -45,7 +47,7 @@ namespace GL {
     [CCode (cname = "glBindBuffer")] public extern void glBindBuffer (uint target, uint buffer);
     [CCode (cname = "glBufferData")] public extern void glBufferData (uint target, long size, [CCode (array_length = false)] float[] data, uint usage);
     [CCode (cname = "glEnableVertexAttribArray")] public extern void glEnableVertexAttribArray (uint index);
-    [CCode (cname = "glVertexAttribPointer")] public extern void glVertexAttribPointer (uint index, int size, uint type, bool normalized, int stride, void* pointer);
+    [CCode (cname = "glVertexAttribPointer")] public extern void glVertexAttribPointer (uint index, int size, uint type, bool normalized, int stride, void* pointer); // vala-lint-disable line-length
     [CCode (cname = "glDrawArrays")] public extern void glDrawArrays (uint mode, int first, int count);
     [CCode (cname = "glClearColor")] public extern void glClearColor (float r, float g, float b, float a);
     [CCode (cname = "glClear")] public extern void glClear (uint mask);
@@ -233,9 +235,22 @@ in vec2 v_uv; out vec4 color; void main(){ color = vec4(1.0,0.0,0.2,1.0); }
         set_auto_render (true);
         realize.connect (on_realize);
         render.connect (on_render);
-        map.connect (() => { if (tick_id == 0) tick_id = add_tick_callback (on_tick); });
-        unmap.connect (() => { if (tick_id != 0) { remove_tick_callback (tick_id); tick_id = 0; } });
+        map.connect (on_map);
+        unmap.connect (on_unmap);
         t0 = GLib.get_monotonic_time () / 1e6;
+    }
+
+    private void on_map () {
+        if (tick_id == 0) {
+            tick_id = add_tick_callback (on_tick);
+        }
+    }
+
+    private void on_unmap () {
+        if (tick_id != 0) {
+            remove_tick_callback (tick_id);
+            tick_id = 0;
+        }
     }
 
     private void on_realize () {
@@ -262,8 +277,8 @@ in vec2 v_uv; out vec4 color; void main(){ color = vec4(1.0,0.0,0.2,1.0); }
 
     private bool on_render (Gdk.GLContext ctx) {
         if (program == 0u) return false;
-        int w_log = get_allocated_width ();
-        int h_log = get_allocated_height ();
+        int w_log = (int) get_width ();
+        int h_log = (int) get_height ();
         int scale = this.get_scale_factor ();
         int w_fb = w_log * scale;
         int h_fb = h_log * scale;

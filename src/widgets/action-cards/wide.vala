@@ -10,8 +10,6 @@ using Tape.YaMAPI;
 public class Cassette.ActionCardWide : ActionCardCustom {
 
     [GtkChild]
-    unowned Gtk.Box content_box;
-    [GtkChild]
     unowned CoverImage cover_image;
     [GtkChild]
     unowned Gtk.Label title_label;
@@ -64,5 +62,3 @@ public class Cassette.ActionCardWide : ActionCardCustom {
         title_label.visible = title != null && title != "";
     }
 }
-
-

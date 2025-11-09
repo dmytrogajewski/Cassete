@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -30,36 +30,44 @@ public sealed class Cassette.CoverImage : Gtk.Frame {
     public int image_widget_size { get; set; }
 
     construct {
-        notify["cover-size"].connect (() => {
-            // Handle initial state or invalid values gracefully
-            if (cover_size == 0) {
-                cover_size = CoverSize.BIG;
-                return;
-            }
+        notify.connect (on_cover_image_notify);
 
-            switch (cover_size) {
-                case CoverSize.SMALL:
-                    placeholder_image.icon_size = Gtk.IconSize.NORMAL;
-                    image_widget_size = 60;
-                    add_css_class ("small-border-radius");
-                    break;
-
-                case CoverSize.BIG:
-                    placeholder_image.icon_size = Gtk.IconSize.LARGE;
-                    image_widget_size = 200;
-                    remove_css_class ("small-border-radius");
-                    break;
-
-                default:
-                    // Unknown value, default to BIG
-                    cover_size = CoverSize.BIG;
-                    break;
-            }
-        });
-        
         // Ensure initial state is set correctly
         if (cover_size == 0) {
             cover_size = CoverSize.BIG;
+        }
+    }
+
+    void on_cover_image_notify (ParamSpec pspec) {
+        if (pspec.name == "cover-size") {
+            update_cover_size ();
+        }
+    }
+
+    void update_cover_size () {
+        // Handle initial state or invalid values gracefully
+        if (cover_size == 0) {
+            cover_size = CoverSize.BIG;
+            return;
+        }
+
+        switch (cover_size) {
+            case CoverSize.SMALL:
+                placeholder_image.icon_size = Gtk.IconSize.NORMAL;
+                image_widget_size = 60;
+                add_css_class ("small-border-radius");
+                break;
+
+            case CoverSize.BIG:
+                placeholder_image.icon_size = Gtk.IconSize.LARGE;
+                image_widget_size = 200;
+                remove_css_class ("small-border-radius");
+                break;
+
+            default:
+                // Unknown value, default to BIG
+                cover_size = CoverSize.BIG;
+                break;
         }
     }
 
@@ -79,7 +87,7 @@ public sealed class Cassette.CoverImage : Gtk.Frame {
         Gdk.Pixbuf? pixbuf_buffer = null;
 
         debug ("[CoverImage] load_image start: type=%s size=%d", yam_object.get_type ().name (), (int) cover_size);
-        var image_bytes = yield Application.tape_client.cachier.get_image (yam_object, (int) cover_size);
+        var image_bytes = yield Cachier.get_image (yam_object, (int) cover_size);
         if (image_bytes != null) {
             debug ("[CoverImage] cache hit: %zu bytes", image_bytes.get_size ());
         } else {
@@ -149,4 +157,3 @@ public sealed class Cassette.CoverImage : Gtk.Frame {
         }
     }
 }
-

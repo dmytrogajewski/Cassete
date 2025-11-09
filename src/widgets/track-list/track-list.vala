@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -143,45 +143,26 @@ namespace Cassette {
                 map.connect (load_chunk);
                 unmap.connect (unload_all);
 
-                search_entry.search_changed.connect (() => {
-                    filter ();
-                    loaded_rows.clear ();
-                });
+                search_entry.search_changed.connect (on_search_changed);
 
-                Application.app_settings.changed.connect ((key) => {
-                    if (key == "explicit-visible" || key == "child-visible" || key == "available-visible") {
-                        search_entry.search_changed ();
-                    }
-                });
+                Application.app_settings.changed.connect (on_app_settings_changed);
 
                 var actions = new SimpleActionGroup ();
 
                 var sort_name_action = new SimpleAction ("sort-name", null);
-                sort_name_action.activate.connect (() => {
-                    sort_type = SortType.NAME;
-                    sort ();
-                });
+                sort_name_action.activate.connect (on_sort_name_activate);
                 actions.add_action (sort_name_action);
 
                 var sort_artists_action = new SimpleAction ("sort-artists", null);
-                sort_artists_action.activate.connect (() => {
-                    sort_type = SortType.ARTISTS;
-                    sort ();
-                });
+                sort_artists_action.activate.connect (on_sort_artists_activate);
                 actions.add_action (sort_artists_action);
 
                 var sort_album_action = new SimpleAction ("sort-album", null);
-                sort_album_action.activate.connect (() => {
-                    sort_type = SortType.ALBUM;
-                    sort ();
-                });
+                sort_album_action.activate.connect (on_sort_album_activate);
                 actions.add_action (sort_album_action);
 
                 var sort_duration_action = new SimpleAction ("sort-duration", null);
-                sort_duration_action.activate.connect (() => {
-                    sort_type = SortType.DURATION;
-                    sort ();
-                });
+                sort_duration_action.activate.connect (on_sort_duration_activate);
                 actions.add_action (sort_duration_action);
 
                 insert_action_group ("tracklist", actions);
@@ -195,29 +176,68 @@ namespace Cassette {
                 menu.append_section (null, section);
                 sort_menu_button.menu_model = menu;
 
-                sort_direction_button.clicked.connect (() => {
-                    switch (sort_direction) {
-                        case SortDirection.ASCENDING:
-                            sort_direction = SortDirection.DESCENDING;
-                            sort_direction_button.icon_name = "view-sort-descending-symbolic";
-                            break;
-                        case SortDirection.DESCENDING:
-                            sort_direction = SortDirection.ASCENDING;
-                            sort_direction_button.icon_name = "view-sort-ascending-symbolic";
-                            break;
-                    }
-                    sort ();
-                });
-
-                remove_sort_button.clicked.connect (() => {
-                    sort_type = null;
-                    sort ();
-                });
             }
 
-            track_box.child_activated.connect ((row) => {
-                ((TrackRow) ((TrackRowW) row).child).trigger ();
-            });
+            track_box.child_activated.connect (on_track_box_child_activated);
+        }
+
+        void on_search_changed () {
+            filter ();
+            loaded_rows.clear ();
+        }
+
+        void on_app_settings_changed (string key) {
+            if (key == "explicit-visible" || key == "child-visible" || key == "available-visible") {
+                search_entry.search_changed ();
+            }
+        }
+
+        void on_sort_name_activate () {
+            sort_type = SortType.NAME;
+            sort ();
+        }
+
+        void on_sort_artists_activate () {
+            sort_type = SortType.ARTISTS;
+            sort ();
+        }
+
+        void on_sort_album_activate () {
+            sort_type = SortType.ALBUM;
+            sort ();
+        }
+
+        void on_sort_duration_activate () {
+            sort_type = SortType.DURATION;
+            sort ();
+        }
+
+        [GtkCallback]
+        void on_sort_direction_button_clicked () {
+            switch (sort_direction) {
+                case SortDirection.ASCENDING:
+                    sort_direction = SortDirection.DESCENDING;
+                    sort_direction_button.icon_name = "view-sort-descending-symbolic";
+                    break;
+                case SortDirection.DESCENDING:
+                    sort_direction = SortDirection.ASCENDING;
+                    sort_direction_button.icon_name = "view-sort-ascending-symbolic";
+                    break;
+            }
+            sort ();
+        }
+
+        [GtkCallback]
+        void on_remove_sort_button_clicked () {
+            sort_type = null;
+            remove_sort_button.visible = false;
+            sort_direction = SortDirection.ASCENDING;
+            sort ();
+            sort_direction_button.icon_name = "view-sort-ascending-symbolic";
+        }
+
+        void on_track_box_child_activated (Gtk.FlowBoxChild row) {
+            ((TrackRow) ((TrackRowW) row).child).trigger ();
         }
 
         public void move_to (int position, int max) {
@@ -305,9 +325,11 @@ namespace Cassette {
                                     if (row_2.track_info.artists.size == 0) {
                                         return 1;
                                     }
-                                    if (row_1.track_info.get_artists_names () > row_2.track_info.get_artists_names ()) {
+                                    if (row_1.track_info.get_artists_names () >
+                                        row_2.track_info.get_artists_names ()) {
                                         return 1;
-                                    } else if (row_1.track_info.get_artists_names () < row_2.track_info.get_artists_names ()) {
+                                    } else if (row_1.track_info.get_artists_names () <
+                                               row_2.track_info.get_artists_names ()) {
                                         return -1;
                                     }
                                     return 0;
@@ -321,9 +343,11 @@ namespace Cassette {
                                     if (row_2.track_info.artists.size == 0) {
                                         return -1;
                                     }
-                                    if (row_1.track_info.get_artists_names () > row_2.track_info.get_artists_names ()) {
+                                    if (row_1.track_info.get_artists_names () >
+                                        row_2.track_info.get_artists_names ()) {
                                         return -1;
-                                    } else if (row_1.track_info.get_artists_names () < row_2.track_info.get_artists_names ()) {
+                                    } else if (row_1.track_info.get_artists_names () <
+                                               row_2.track_info.get_artists_names ()) {
                                         return 1;
                                     }
                                     return 0;
@@ -561,4 +585,3 @@ namespace Cassette {
         }
     }
 }
-

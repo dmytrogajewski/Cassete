@@ -9,7 +9,7 @@ template $CassettePlaylistRow: Frame {
     spacing: 3;
 
     $CassetteCoverImage cover_image {
-      cover-size: big;
+      cover-size: 200;
       image-widget-size: 60;
     }
 
@@ -44,6 +44,7 @@ template $CassettePlaylistRow: Frame {
       valign: center;
       halign: center;
       icon-name: "plus-symbolic";
+      clicked => $on_add_button_clicked();
     }
   }
 }

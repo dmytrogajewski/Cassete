@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -34,13 +34,15 @@ public class Cassette.PlaylistsView : BaseView {
         Object (uid: uid);
     }
 
-    construct {
-        var yam_helper = Application.tape_client.yam_helper;
-        yam_helper.playlists_updated.connect (() => {
-            refresh.begin ();
-        });
+        construct {
+            var yam_helper = Application.tape_client.yam_helper;
+            yam_helper.playlists_updated.connect (on_playlists_updated);
 
-        liked_micro = new PlaylistMicro (this, new YaMAPI.Playlist.liked ());
+            liked_micro = new PlaylistMicro (this, new YaMAPI.Playlist.liked ());
+        }
+
+    void on_playlists_updated () {
+        refresh.begin ();
     }
 
     void set_values (
@@ -114,9 +116,7 @@ public class Cassette.PlaylistsView : BaseView {
         try {
             playlists_info = yield yam_helper.get_playlist_list (uid);
             liked_playlists_info = yield yam_helper.get_likes_playlist_list (uid);
-        } catch (ApiBase.BadStatusCodeError e) {
-            // Ignore bad status codes - API may be temporarily unavailable
-        } catch (Error e) {
+        } catch (GLib.Error e) {
             // Log other errors but don't fail
             warning ("API error: %s", e.message);
         }
@@ -126,7 +126,7 @@ public class Cassette.PlaylistsView : BaseView {
             set_values (playlists_info, liked_playlists_info);
             return -1;
         }
-        
+
         return 0;
     }
 
@@ -145,7 +145,8 @@ public class Cassette.PlaylistsView : BaseView {
             string[] playlists_kinds = playlists_kinds_str.split (",");
             foreach (string kind in playlists_kinds) {
                 string playlist_id = @"$uid_val:$kind";
-                var playlist_info = (YaMAPI.Playlist) (yield storager.load_object (typeof (YaMAPI.Playlist), playlist_id));
+                var playlist_info = (YaMAPI.Playlist) (
+                    yield storager.load_object (typeof (YaMAPI.Playlist), playlist_id));
                 playlists_info.add (playlist_info);
             }
         }
@@ -157,4 +158,3 @@ public class Cassette.PlaylistsView : BaseView {
         return false;
     }
 }
-

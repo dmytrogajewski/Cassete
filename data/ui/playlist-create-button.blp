@@ -10,6 +10,7 @@ template $CassettePlaylistCreateButton : Adw.Bin {
 
     Button real_button {
       has-frame: false;
+      clicked => $on_real_button_clicked();
 
       Box {
         spacing: 8;

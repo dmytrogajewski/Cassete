@@ -1,24 +1,25 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see
  * <https://www.gnu.org/licenses/gpl-3.0-standalone.html>.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 using Tape;
+using GLib;
 
 [GtkTemplate (ui = "/space/rirusha/Cassette/ui/window.ui")]
 public sealed class Cassette.Window : Adw.ApplicationWindow {
@@ -49,8 +50,6 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
     unowned Adw.ToolbarView player_bar_toolbar;
     [GtkChild]
     unowned PlayerBar player_bar;
-    [GtkChild]
-    unowned PrimaryMenuButton menu_button;
 
     Gtk.SearchEntry search_entry;
     SearchView? current_search_view = null;
@@ -78,11 +77,7 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
         }
 
         // Sync window title with WindowTitle widget
-        notify["title"].connect (() => {
-            if (window_title != null) {
-                window_title.title = title;
-            }
-        });
+        notify.connect (on_window_notify);
         if (window_title != null) {
             window_title.title = title;
         }
@@ -96,10 +91,11 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
         // Connect search entry text changes to update search view
         search_entry.search_changed.connect (on_search_changed);
         search_entry.activate.connect (on_search_activate);
+    }
 
-        // Connect toggle button directly instead of using action
-        if (search_toggle_button != null) {
-            search_toggle_button.toggled.connect (on_search_toggled);
+    void on_window_notify (ParamSpec pspec) {
+        if (pspec.name == "title" && window_title != null) {
+            window_title.title = title;
         }
     }
 
@@ -108,19 +104,23 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
     }
 
     void show_auth () {
+        debug ("[TEST] Window show_auth invoked");
         auth.to_auth ();
     }
 
     void show_preferences () {
+        debug ("[TEST] Preferences dialog opened");
         var pref_win = new PreferencesDialog ();
         pref_win.present (this);
     }
 
     void show_about () {
+        debug ("[TEST] About dialog opened");
         build_about ().present (this);
     }
 
     void show_help_overlay () {
+        debug ("[TEST] Help overlay opened");
         var shortcuts = new ShortcutsWindow ();
         shortcuts.present (this);
     }
@@ -139,8 +139,10 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
         sidebar.close ();
     }
 
+    [GtkCallback]
     void on_search_toggled () {
         bool is_active = search_toggle_button.active;
+        debug ("[TEST] Search toggle changed: active=%s", is_active.to_string ());
 
         if (is_active) {
             // Navigate to search view
@@ -172,11 +174,11 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
     }
 
     void on_search_changed () {
-        debug ("Search entry changed: %s", search_entry.text);
+        debug ("[TEST] Search entry changed: %s", search_entry.text);
         if (current_search_view != null) {
             current_search_view.search_query = search_entry.text;
         } else {
-            debug ("current_search_view is null!");
+            debug ("[TEST] Search entry change ignored: current_search_view is null");
         }
     }
 

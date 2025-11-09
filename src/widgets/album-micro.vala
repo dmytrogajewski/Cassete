@@ -1,16 +1,17 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 using Tape;
 using Tape.YaMAPI;
+using GLib;
 
 [GtkTemplate (ui = "/space/rirusha/Cassette/ui/album-micro.ui")]
 public class Cassette.AlbumMicro : Adw.Bin {
@@ -21,7 +22,7 @@ public class Cassette.AlbumMicro : Adw.Bin {
     [GtkChild]
     unowned Gtk.Label album_artist;
     [GtkChild]
-    unowned Gtk.Button self;
+    unowned Gtk.Button root_button;
     [GtkChild]
     unowned Gtk.Box card_box;
 
@@ -36,31 +37,53 @@ public class Cassette.AlbumMicro : Adw.Bin {
         Object ();
     }
 
-    construct {
-        if (album_info != null) {
-            // Add hover/active highlight like other action cards (apply to card_box)
-            var hover = new Gtk.EventControllerMotion ();
-            hover.enter.connect (() => { card_box.add_css_class ("action-card-hover"); });
-            hover.leave.connect (() => { card_box.remove_css_class ("action-card-hover"); });
-            self.add_controller (hover);
+        construct {
+            if (album_info != null) {
+                // Add hover/active highlight like other action cards (apply to card_box)
+                var hover = new Gtk.EventControllerMotion ();
+                hover.enter.connect (on_hover_enter);
+                hover.leave.connect (on_hover_leave);
+                root_button.add_controller (hover);
 
-            var press = new Gtk.GestureClick ();
-            press.pressed.connect (() => { card_box.add_css_class ("action-card-active"); });
-            press.released.connect (() => { card_box.remove_css_class ("action-card-active"); });
-            press.stopped.connect (() => { card_box.remove_css_class ("action-card-active"); });
-            self.add_controller (press);
+                var press = new Gtk.GestureClick ();
+                press.pressed.connect (on_press_pressed);
+                press.released.connect (on_press_released);
+                press.stopped.connect (on_press_stopped);
+                root_button.add_controller (press);
 
-            self.clicked.connect (() => {
-                if (collection_view != null && collection_view.root_view != null) {
-                    collection_view.root_view.add_view (new AlbumView (album_info.id));
-                }
-            });
-
-            set_values ();
-        } else {
-            sensitive = false;
+                set_values ();
+            } else {
+                sensitive = false;
+            }
         }
-    }
+
+        void on_hover_enter () {
+            card_box.add_css_class ("action-card-hover");
+        }
+
+        void on_hover_leave () {
+            card_box.remove_css_class ("action-card-hover");
+        }
+
+        void on_press_pressed () {
+            card_box.add_css_class ("action-card-active");
+        }
+
+        void on_press_released () {
+            card_box.remove_css_class ("action-card-active");
+        }
+
+        void on_press_stopped () {
+            card_box.remove_css_class ("action-card-active");
+        }
+
+        [GtkCallback]
+        void on_clicked () {
+            if (collection_view != null && collection_view.root_view != null) {
+                debug ("[TEST] AlbumMicro clicked: album_id=%s", album_info.id);
+                collection_view.root_view.add_view (new AlbumView (album_info.id));
+            }
+        }
 
     void set_values () {
         if (album_info == null) {
@@ -84,4 +107,3 @@ public class Cassette.AlbumMicro : Adw.Bin {
         cover_image.load_image.begin ();
     }
 }
-

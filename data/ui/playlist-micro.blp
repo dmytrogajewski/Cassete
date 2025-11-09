@@ -8,16 +8,17 @@ template $CassettePlaylistMicro : Adw.Bin {
   Adw.Clamp {
     maximum-size: 220;
 
-    Button self {
+    Button root_button {
       has-frame: false;
       css-classes: ["flat", "no-hover-effect"];
+      clicked => $on_clicked();
 
       Box {
         spacing: 8;
         orientation: vertical;
 
         $CassetteCoverImage cover_image {
-          cover-size: big;
+          cover-size: 200;
           image-widget-size: 200;
         }
 

@@ -35,12 +35,14 @@ template $CassetteTrackList: Adw.Bin {
         Button sort_direction_button {
           css-classes: ["flat"];
           icon-name: "view-sort-ascending-symbolic";
+          clicked => $on_sort_direction_button_clicked();
         }
 
         Button remove_sort_button {
           css-classes: ["flat"];
           visible: false;
           icon-name: "window-close-symbolic";
+          clicked => $on_remove_sort_button_clicked();
         }
       }
     }

@@ -1,16 +1,17 @@
 /*
  * Copyright (C) 2023-2025 Vladimir Romanov <rirusha@altlinux.org>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 using Tape;
 using Tape.YaMAPI;
+using GLib;
 
 namespace Cassette {
     [GtkTemplate (ui = "/space/rirusha/Cassette/ui/playlist-view.ui")]
@@ -36,12 +37,6 @@ namespace Cassette {
         [GtkChild]
         unowned LikeButton like_button;
         [GtkChild]
-        unowned Gtk.Button save_button;
-        [GtkChild]
-        unowned Gtk.Button delete_button;
-        [GtkChild]
-        unowned Gtk.Button abort_button;
-        [GtkChild]
         unowned Gtk.Button add_page_button;
         [GtkChild]
         unowned Gtk.Box main_box;
@@ -53,119 +48,166 @@ namespace Cassette {
         unowned Gtk.Button edit_button;
         [GtkChild]
         unowned Gtk.Button remove_button;
-        [GtkChild]
-        unowned Gtk.Button back_button;
 
         public override bool can_refresh { get; default = true; }
 
         public string? uid { get; construct set; }
         public string kind { get; construct set; }
 
+        YaMAPI.Playlist? initial_playlist = null;
+
         public PlaylistView (string? uid, string kind) {
             Object (uid: uid, kind: kind);
+            debug ("[TEST] PlaylistView constructed: uid=%s kind=%s", uid ?? "<null>", kind);
+        }
+
+        public PlaylistView.with_playlist (YaMAPI.Playlist playlist) {
+            string? resolved_uid = playlist.uid;
+
+            if (resolved_uid == null || resolved_uid == "") {
+                if (playlist.owner != null && playlist.owner.uid != null && playlist.owner.uid != "") {
+                    resolved_uid = Cassette.Application.tape_client.yam_helper.me.uid;
+                } else {
+                    resolved_uid = Cassette.Application.tape_client.yam_helper.me.uid;
+                }
+            }
+
+            string resolved_kind = playlist.kind ?? "recent";
+
+            Object (uid: resolved_uid, kind: resolved_kind);
+
+            initial_playlist = playlist;
+            debug ("[TEST] PlaylistView.with_playlist constructed: title=%s kind=%s tracks=%d", playlist.title ?? "<null>", resolved_kind, playlist.track_count);
         }
 
         construct {
+            debug ("[TEST] PlaylistView construct start: uid=%s kind=%s initial_playlist=%s",
+                   uid ?? "<null>", kind, initial_playlist != null ? "true" : "false");
             var yam_helper = Application.tape_client.yam_helper;
-
-            back_button.clicked.connect (() => {
-                if (root_view != null) {
-                    root_view.backward ();
-                }
-            });
 
             visibility_switch.state_set.connect (on_switch_change);
 
             if (yam_helper.is_me (uid) && kind != "3") {
                 visibility_switch.visible = true;
                 remove_button.visible = true;
-
-                remove_button.clicked.connect (() => {
-                    var dialog = new Adw.AlertDialog (
-                        _("Delete playlist?"),
-                        _("Playlist '%s' will be permanently deleted.").printf (((YaMAPI.Playlist) object_info).title)
-                    );
-
-                    // Translators: cancel of deleting playlist
-                    dialog.add_response ("cancel", _("Cancel"));
-                    dialog.add_response ("delete", _("Delete"));
-
-                    dialog.set_response_appearance ("delete", Adw.ResponseAppearance.DESTRUCTIVE);
-
-                    dialog.default_response = "cancel";
-                    dialog.close_response = "cancel";
-
-                    dialog.response.connect ((dialog, response) => {
-                        if (response == "delete") {
-                            playlist_delete_async.begin ((obj, res) => {
-                                if (playlist_delete_async.end (res)) {
-                                    if (root_view != null) {
-                                        root_view.backward ();
-                                    }
-                                    //
-                                    // var app = (Application?) GLib.Application.get_default ();
-                                    // var window = app?.active_window as Window;
-                                    // window?.page_root.remove_page (object_info.oid);
-
-                                    var app = (Application?) GLib.Application.get_default ();
-                                    var window = app?.active_window as Window;
-                                    window?.show_message (_("Playlist '%s' was deleted").printf (
-                                        ((YaMAPI.Playlist) object_info).title
-                                    ));
-                                }
-                            });
-                        }
-                    });
-
-                    var app = (Application?) GLib.Application.get_default ();
-                    var window = app?.active_window as Window;
-                    dialog.present (window);
-                });
             }
 
             track_list = new TrackList (scrolled_window.vadjustment);
             main_box.append (track_list);
 
-            save_button.clicked.connect (() => {
-                start_saving (true);
-            });
-            abort_button.clicked.connect (abort_saving);
-            delete_button.clicked.connect (() => {
-                uncache_playlist (true);
-            });
-
-            play_button.clicked.connect (play_mark_context.trigger);
-
             play_mark_context.triggered_not_playing.connect (start_playing);
 
             if (kind != "3" || (uid != null && uid != yam_helper.me.oid)) {
                 add_page_button.visible = true;
-                add_page_button.clicked.connect (() => {
-                    var playlist_info = object_info as YaMAPI.Playlist;
-                    //
-                    // var app = (Application?) GLib.Application.get_default ();
-                    // var window = app?.active_window as Window;
-                    // if (window != null) {
-                    //     window.page_root.add_custom_page ({
-                    //         playlist_info.oid,
-                    //         playlist_info.title,
-                    //         "multimedia-player-symbolic",
-                    //         typeof (PlaylistView).name (),
-                    //         {uid, kind}
-                    //     });
-                    // }
-                });
             }
 
-            yam_helper.playlist_changed.connect ((new_playlist) => {
-                if (new_playlist.oid == ((YaMAPI.Playlist) object_info).oid) {
-                    object_info = new_playlist;
-                    set_values ();
-                }
-            });
+            yam_helper.playlist_changed.connect (on_playlist_changed);
 
             block_widget (edit_button, BlockReason.NOT_IMPLEMENTED);
             block_widget (like_button, BlockReason.NOT_IMPLEMENTED);
+
+            if (initial_playlist != null) {
+                object_info = initial_playlist;
+                set_values ();
+                cover_image.init_content ((HasCover) object_info);
+                cover_image.load_image.begin ();
+                show_ready ();
+                debug ("[TEST] PlaylistView initial playlist applied: uid=%s kind=%s", uid ?? "<null>", kind);
+            }
+        }
+
+        [GtkCallback]
+        void on_back_button_clicked () {
+            if (root_view != null) {
+                debug ("[TEST] PlaylistView back button clicked");
+                root_view.backward ();
+            }
+        }
+
+        [GtkCallback]
+        void on_remove_button_clicked () {
+            var dialog = new Adw.AlertDialog (
+                _("Delete playlist?"),
+                _("Playlist '%s' will be permanently deleted.").printf (((YaMAPI.Playlist) object_info).title)
+            );
+            debug ("[TEST] PlaylistView remove button clicked: playlist=%s", ((YaMAPI.Playlist) object_info).title ?? "<null>");
+
+            // Translators: cancel of deleting playlist
+            dialog.add_response ("cancel", _("Cancel"));
+            dialog.add_response ("delete", _("Delete"));
+
+            dialog.set_response_appearance ("delete", Adw.ResponseAppearance.DESTRUCTIVE);
+
+            dialog.default_response = "cancel";
+            dialog.close_response = "cancel";
+
+            dialog.response.connect (on_delete_dialog_response);
+
+            var app = (Application?) GLib.Application.get_default ();
+            var window = app?.active_window as Window;
+            dialog.present (window);
+        }
+
+        void on_delete_dialog_response (Adw.AlertDialog dialog, string response) {
+            if (response == "delete") {
+                debug ("[TEST] PlaylistView delete confirmed");
+                playlist_delete_async.begin (on_playlist_delete_async_complete);
+            } else {
+                debug ("[TEST] PlaylistView delete cancelled");
+            }
+        }
+
+        void on_playlist_delete_async_complete (Object? obj, AsyncResult res) {
+            if (playlist_delete_async.end (res)) {
+                debug ("[TEST] PlaylistView delete completed");
+                if (root_view != null) {
+                    root_view.backward ();
+                }
+
+                var app = (Application?) GLib.Application.get_default ();
+                var window = app?.active_window as Window;
+                window?.show_message (_("Playlist '%s' was deleted").printf (
+                    ((YaMAPI.Playlist) object_info).title
+                ));
+            }
+        }
+
+        [GtkCallback]
+        void on_save_button_clicked () {
+            start_saving (true);
+            debug ("[TEST] PlaylistView save button clicked");
+        }
+
+        [GtkCallback]
+        void on_delete_button_clicked () {
+            uncache_playlist (true);
+            debug ("[TEST] PlaylistView delete from cache clicked");
+        }
+
+        [GtkCallback]
+        void on_add_page_button_clicked () {
+            // TODO: Implement custom page addition
+            debug ("[TEST] PlaylistView add page button clicked (not implemented)");
+        }
+
+        [GtkCallback]
+        void on_play_button_clicked () {
+            play_mark_context.trigger ();
+            debug ("[TEST] PlaylistView play button clicked");
+        }
+
+        [GtkCallback]
+        void on_abort_button_clicked () {
+            abort_saving ();
+            debug ("[TEST] PlaylistView abort saving clicked");
+        }
+
+        void on_playlist_changed (YaMAPI.Playlist new_playlist) {
+            if (new_playlist.oid == ((YaMAPI.Playlist) object_info).oid) {
+                object_info = new_playlist;
+                set_values ();
+                debug ("[TEST] PlaylistView playlist changed signal handled: oid=%s", new_playlist.oid);
+            }
         }
 
         public async bool playlist_delete_async () {
@@ -195,6 +237,7 @@ namespace Cassette {
             visibility_switch.state_set.disconnect (on_switch_change);
             visibility_switch.active = playlist_info.is_public;
             visibility_switch.state_set.connect (on_switch_change);
+            debug ("[TEST] PlaylistView visibility updated: is_public=%s", playlist_info.is_public.to_string ());
 
             // Share action is handled by PlaylistOptionsButton, which is already set up
 
@@ -232,7 +275,8 @@ namespace Cassette {
                     format_string = C_ ("male person", "%s updated playlist %s");
                 }
 
-                playlist_status.label = format_string.printf (playlist_info.owner.name, get_when (playlist_info.modified));
+                playlist_status.label = format_string.printf (
+                    playlist_info.owner.name, get_when (playlist_info.modified));
             }
 
             var ptrack_list = playlist_info.get_track_list ();
@@ -245,6 +289,7 @@ namespace Cassette {
             } else {
                 play_button.sensitive = false;
             }
+            debug ("[TEST] PlaylistView set_values applied: tracks=%d is_public=%s", playlist_info.track_count, playlist_info.is_public.to_string ());
 
             like_button.init_content (playlist_info.oid);
             save_stack.init_content (playlist_info.oid);
@@ -255,29 +300,35 @@ namespace Cassette {
         }
 
         public bool on_switch_change (Gtk.Switch sw, bool is_active) {
-            on_switch_change_async.begin (is_active, (obj, res) => {
-                YaMAPI.Playlist? playlist_info = on_switch_change_async.end (res);
+            on_switch_change_async.begin (is_active, on_switch_change_async_complete);
+            debug ("[TEST] PlaylistView visibility toggle clicked: new_state=%s", is_active.to_string ());
+            return false;
+        }
 
-                if (playlist_info == null) {
-                    var app = (Application?) GLib.Application.get_default ();
-                    var window = app?.active_window as Window;
-                    window?.show_message (_("Can't change visibility of playlist"));
-                    return;
-                }
+        void on_switch_change_async_complete (Object? obj, AsyncResult res) {
+            YaMAPI.Playlist? playlist_info = on_switch_change_async.end (res);
 
-                visibility_switch.state_set.disconnect (on_switch_change);
+            if (playlist_info == null) {
                 var app = (Application?) GLib.Application.get_default ();
                 var window = app?.active_window as Window;
-                if (playlist_info.is_public) {
-                    window?.show_message (_("Playlist '%s' is public now").printf (playlist_info.title));
-                    visibility_switch.active = true;
-                } else {
-                    window?.show_message (_("Playlist '%s' is private now").printf (playlist_info.title));
-                    visibility_switch.active = false;
-                }
-                visibility_switch.state_set.connect (on_switch_change);
-            });
-            return false;
+                window?.show_message (_("Can't change visibility of playlist"));
+                debug ("[TEST] PlaylistView visibility change failed");
+                return;
+            }
+
+            visibility_switch.state_set.disconnect (on_switch_change);
+            var app = (Application?) GLib.Application.get_default ();
+            var window = app?.active_window as Window;
+            if (playlist_info.is_public) {
+                window?.show_message (_("Playlist '%s' is public now").printf (playlist_info.title));
+                visibility_switch.active = true;
+                debug ("[TEST] PlaylistView visibility set to public");
+            } else {
+                window?.show_message (_("Playlist '%s' is private now").printf (playlist_info.title));
+                visibility_switch.active = false;
+                debug ("[TEST] PlaylistView visibility set to private");
+            }
+            visibility_switch.state_set.connect (on_switch_change);
         }
 
         async YaMAPI.Playlist? on_switch_change_async (bool is_active) {
@@ -285,16 +336,33 @@ namespace Cassette {
 
             var yam_helper = Application.tape_client.yam_helper;
             try {
-                playlist_info = yield yam_helper.change_playlist_visibility (((YaMAPI.Playlist) object_info).kind, is_active);
+                playlist_info = yield yam_helper.change_playlist_visibility (
+                    ((YaMAPI.Playlist) object_info).kind, is_active);
             } catch (Error e) {
                 warning ("Failed to change playlist visibility: %s", e.message);
+                debug ("[TEST] PlaylistView visibility change exception: %s", e.message);
             }
 
+            debug ("[TEST] PlaylistView visibility change async completed: playlist=%s", playlist_info != null ? playlist_info.title : "<null>");
             return playlist_info;
+        }
+
+        public async override void first_show () {
+            if (initial_playlist != null) {
+                // Already populated during construct
+                return;
+            }
+
+            set_values ();
+            debug ("[TEST] PlaylistView first_show without preload");
         }
 
         public async override int try_load_from_web () {
             int code = 0;
+
+            if (initial_playlist != null) {
+                return -1;
+            }
 
             var yam_helper = Application.tape_client.yam_helper;
             try {
@@ -317,6 +385,10 @@ namespace Cassette {
         }
 
         public async override bool try_load_from_cache () {
+            if (initial_playlist != null) {
+                return false;
+            }
+
             var yam_helper = Application.tape_client.yam_helper;
             var storager = Application.tape_client.cachier.storager;
 
@@ -340,4 +412,3 @@ namespace Cassette {
         }
     }
 }
-
