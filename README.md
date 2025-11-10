@@ -120,6 +120,27 @@ meson setup _build -Dis_devel=true
 sudo ninja install -C _build
 ```
 
+### Flatpak (recommended for GNOME environments)
+
+> Builds Cassette inside the GNOME 47 SDK using `flatpak-builder`.
+```shell
+flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak install --user -y org.gnome.Sdk//49 org.gnome.Platform//49
+flatpak-builder --user --install --force-clean build-flatpak flatpak/space.rirusha.Cassette.yml
+flatpak run space.rirusha.Cassette
+```
+
+### Docker (multi-stage build)
+
+> Produces release artifacts (Meson dist tarballs, DEB/RPM packages) via the multi-stage Dockerfile.
+```shell
+docker build --target artifacts -t cassette-artifacts .
+container_id=$(docker create cassette-artifacts)
+docker cp "$container_id":/dist ./dist
+docker rm "$container_id"
+ls dist
+```
+
 #### Testing
 ```shell
 ninja -C _build test

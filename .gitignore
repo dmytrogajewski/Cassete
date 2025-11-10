@@ -22,3 +22,6 @@ repo
 # Local tools
 tools/vala-lint/
 tools/local_install/
+
+# Distribution artifacts
+dist/

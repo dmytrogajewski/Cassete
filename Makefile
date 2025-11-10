@@ -226,6 +226,30 @@ config:
 	@echo "Build configuration:"
 	@ninja -C $(BUILDDIR) -t compdb 2>/dev/null | head -5 || echo "Build directory not configured. Run 'make setup' first."
 
+.PHONY: package
+package:
+	@set -e; \
+	TAG=$$(git describe --tags --exact-match 2>/dev/null || true); \
+	if [ -n "$$TAG" ]; then \
+		VERSION=$${TAG#v}; \
+	else \
+		VERSION=$$(git rev-parse --short HEAD 2>/dev/null); \
+		if [ -z "$$VERSION" ]; then \
+			echo "Unable to determine git commit."; \
+			exit 1; \
+		fi; \
+	fi; \
+	echo "Using version $$VERSION"; \
+	echo "Building release artifacts inside Docker..."; \
+	docker build --build-arg APP_VERSION=$$VERSION --target artifacts -t cassette-artifacts .; \
+	echo "Extracting artifacts to dist/..."; \
+	cid=$$(docker create cassette-artifacts); \
+		rm -rf dist; \
+		mkdir -p dist; \
+		docker cp $$cid:/dist/. dist/; \
+		docker rm $$cid >/dev/null; \
+		echo "Finished! Packages are in dist/ (version $$VERSION)"
+
 # Show help
 .PHONY: help
 help:

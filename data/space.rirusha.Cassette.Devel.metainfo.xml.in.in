@@ -103,6 +103,24 @@
         </ul>
       </description>
     </release>
+    <release version="1.0.0" date="2025-11-11">
+      <description>
+        <p>Complecte rework and refactoring</p>
+        <ul>
+          <li>Complecte rework and refactoring of the application</li>
+          <li>Added possibility to login via token (and build app without webkit auth)</li>
+          <li>New libtape SDK</li>
+          <li>New cache system with new storager</li>
+          <li>New settings system</li>
+          <li>New playlist system</li>
+          <li>New track system</li>
+          <li>New album system</li>
+          <li>New artist system</li>
+          <li>New genre system</li>
+          <li>New playlist system</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.1" date="2025-02-25">
       <description>
         <p>Fixed a bug on the stations page and the playlist page in GNOME 48</p>

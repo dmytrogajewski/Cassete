@@ -36,13 +36,43 @@ name_suffix = ''
 version_suffix = ''
 app_id_suffix = ''
 
+git = find_program('git', required: false)
+git_commit = ''
+git_tag = ''
+
+if git.found()
+  git_commit_cmd = run_command(git, 'rev-parse', '--short', 'HEAD', check: false)
+  if git_commit_cmd.returncode() == 0
+    git_commit = git_commit_cmd.stdout().strip()
+  endif
+
+  git_tag_cmd = run_command(git, 'describe', '--tags', '--exact-match', check: false)
+  if git_tag_cmd.returncode() == 0
+    git_tag = git_tag_cmd.stdout().strip()
+  else
+    git_tag_fallback = run_command(git, 'describe', '--tags', '--abbrev=0', check: false)
+    if git_tag_fallback.returncode() == 0
+      git_tag = git_tag_fallback.stdout().strip()
+    endif
+  endif
+endif
+
 if get_option('is_devel')
   name_suffix = ' (Devel)'
   app_id_suffix = '.Devel'
 
-  git = find_program('git', required: true)
-  vcs_tag = run_command(git.full_path(), 'rev-parse', '--short', 'HEAD', check: true).stdout().strip()
-  version_suffix = '-dev.' + vcs_tag
+  if git_commit != ''
+    version_suffix = '-dev.' + git_commit
+  else
+    version_suffix = '-dev'
+  endif
+endif
+
+display_version = meson.project_version() + version_suffix
+if git_tag != ''
+  display_version = git_tag
+elif git_commit != ''
+  display_version += ' (' + git_commit + ')'
 endif
 
 app_id_relevant = app_id + app_id_suffix
@@ -54,7 +84,9 @@ conf.set_quoted('APP_ID_RELEVANT', app_id_relevant)
 conf.set_quoted('APP_NAME', app_name)
 conf.set_quoted('G_LOG_DOMAIN', app_id_relevant)
 conf.set10('IS_DEVEL', get_option('is_devel'))
-conf.set_quoted('VERSION', meson.project_version() + version_suffix)
+conf.set_quoted('VERSION', display_version)
+conf.set_quoted('GIT_COMMIT', git_commit)
+conf.set_quoted('GIT_TAG', git_tag)
 conf.set_quoted('GETTEXT_PACKAGE', meson.project_name())
 conf.set_quoted('DATADIR', get_option('prefix') / get_option('datadir'))
 conf.set_quoted('GNOMELOCALEDIR', get_option('prefix') / get_option('localedir'))
@@ -67,13 +99,21 @@ config_h_dir = include_directories('.')
 
 gee_dep = dependency('gee-0.8')
 gio_dep = dependency('gio-2.0', version: '>= ' + glib_min_version)
-libadwaita_dep = dependency('libadwaita-1', version: '>= 1.6')
-libapi_base_dep = dependency('libapi-base-4', fallback : ['libapi-base', 'lib_dep'])
-libtape_dep = dependency('libtape-0.2', fallback : ['libtape', 'lib_dep'])
+libadwaita_dep = dependency('libadwaita-1', version: '>= 1.5')
 epoxy_dep = dependency('epoxy', required: true)
 
 if get_option('with_webkit')
   webkit_dep = dependency('webkitgtk-6.0')
+endif
+
+libapi_base_dep = dependency('libapi-base-4', required: false)
+if not libapi_base_dep.found()
+  subdir('src/api')
+endif
+
+libtape_dep = dependency('libtape-0.2', required: false)
+if not libtape_dep.found()
+  subdir('src/tape')
 endif
 
 dependencies = [

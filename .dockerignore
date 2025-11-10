@@ -1,0 +1,11 @@
+.git
+build
+build-release
+_build
+build-flatpak
+repo
+cassette.flatpak
+meson-info
+meson-private
+*.tar.gz
+

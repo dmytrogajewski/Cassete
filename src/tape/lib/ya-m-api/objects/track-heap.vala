@@ -1,0 +1,57 @@
+/*
+ * Copyright (C) 2024 Vladimir Romanov
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+using Gee;
+
+public class Tape.YaMAPI.TrackHeap : ApiBase.DataObject, HasID, HasTracks {
+
+    public string oid {
+        owned get {
+            return "";
+        }
+    }
+
+    public ArrayList<Track> tracks { get; set; default = new ArrayList<Track> (); }
+
+    public Gee.ArrayList<YaMAPI.Track> get_filtered_track_list (
+        bool with_explicit,
+        bool with_child,
+        string[] exception_tracks_ids = new string[0]
+    ) {
+        debug (
+            "[TRACK_HEAP] get_filtered_track_list: tracks.size=%d, with_explicit=%s, with_child=%s, exceptions=%d",
+            tracks.size, with_explicit.to_string (), with_child.to_string (),
+            exception_tracks_ids.length);
+        var out_track_list = new ArrayList<Track> ();
+
+        foreach (Track track in tracks) {
+            if (
+                (track.available && (
+                    (!track.is_explicit || with_explicit) &&
+                    (!track.is_suitable_for_children || with_child)
+                )) || track.id in exception_tracks_ids
+            ) {
+                out_track_list.add (track);
+            }
+        }
+
+        debug ("[TRACK_HEAP] get_filtered_track_list: Completed, returning %d tracks", out_track_list.size);
+        return out_track_list;
+    }
+}
