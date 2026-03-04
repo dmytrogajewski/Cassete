@@ -23,11 +23,27 @@ namespace Cassette {
             content_width = 600;
             content_height = 960;
 
-            begin_view.online_complete.connect (force_close);
-            begin_view.local_choosed.connect (force_close);
+        begin_view.online_complete.connect (on_online_complete);
+        begin_view.local_choosed.connect (on_local_choosed);
 
-            can_close = false;
-            close_attempt.connect (on_close_attempt);
+        can_close = false;
+        close_attempt.connect (on_close_attempt);
+        }
+
+        void on_online_complete () {
+            var app = (Application?) GLib.Application.get_default ();
+            if (app != null) {
+                app.application_state = ApplicationState.ONLINE;
+            }
+            force_close ();
+        }
+
+        void on_local_choosed () {
+            var app = (Application?) GLib.Application.get_default ();
+            if (app != null) {
+                app.application_state = ApplicationState.LOCAL;
+            }
+            force_close ();
         }
 
         void on_close_attempt () {

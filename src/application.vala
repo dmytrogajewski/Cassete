@@ -131,6 +131,7 @@ public sealed class Cassette.Application : Adw.Application {
         typeof (Cassette.CustomPagesPreferences).ensure ();
         typeof (Cassette.CustomPagePreferences).ensure ();
         typeof (Cassette.CacheDeletionPreferences).ensure ();
+        typeof (Cassette.BeginDialog).ensure ();
     }
 
     construct {

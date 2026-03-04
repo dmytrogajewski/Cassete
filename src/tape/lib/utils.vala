@@ -72,30 +72,22 @@ namespace Tape {
         public const int BIG = 400;
     }
 
-    public enum UriObjectType {
-        PLAYLIST,
-        ALBUM,
-        TRACK,
-        ARTIST,
-        FILE,
-    }
-
     public enum PlayerState {
         NONE,
         PLAYING,
         PAUSED
     }
 
-    public enum RepeatMode {
-        OFF,
-        ONE,
-        QUEUE
-    }
-
     public enum MusicQuality {
         LQ,
         NQ,
         LOSSLESS;
+    }
+
+    public enum RepeatMode {
+        OFF,
+        ONE,
+        QUEUE
     }
 
     public enum ShuffleMode {

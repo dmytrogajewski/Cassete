@@ -235,6 +235,14 @@ lint: build
 		echo "Or install system-wide with: sudo dnf install vala-lint (Fedora) or sudo apt install vala-lint (Debian)"; \
 	fi; \
 	echo ""; \
+	echo "=== Running dead code check (symbols used only in tests) ==="; \
+	if python3 "$(CURDIR)/vala-checkers/deadcode_checker.py" "$(CURDIR)"; then \
+		echo "Dead code check: no issues found."; \
+	else \
+		echo "Dead code check: FAILED (see above). Code used only in tests is considered dead."; \
+		LINT_ERRORS=$$((LINT_ERRORS + 1)); \
+	fi; \
+	echo ""; \
 	if [ $$LINT_ERRORS -gt 0 ]; then \
 		echo "Linting completed with errors. Check the output above for details."; \
 		exit 1; \
@@ -307,7 +315,7 @@ help:
 	@echo "Other targets:"
 	@echo "  make test       - Run tests"
 	@echo "  make check      - Run vala-lint checker (if available)"
-	@echo "  make lint       - Run comprehensive linting (vala-lint + PVS-Studio OSS)"
+	@echo "  make lint       - Run comprehensive linting (vala-lint + dead code check)"
 	@echo "  make setup-vala-lint - Clone and build vala-lint locally"
 	@echo "  make install-vala-lint - Install vala-lint to tools/local_install/bin"
 	@echo "  make pot        - Update translation template"

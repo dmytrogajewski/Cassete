@@ -57,13 +57,6 @@ public class Tape.YaMAPI.CollectionTabItem : ApiBase.DataObject {
 }
 
 /**
- * Collection tabs response (for albums or playlists)
- */
-public class Tape.YaMAPI.CollectionTabs : ApiBase.DataObject {
-    public ArrayList<CollectionTabItem> tabs { get; set; default = new ArrayList<CollectionTabItem> (); }
-}
-
-/**
  * Collection liked albums response
  */
 public class Tape.YaMAPI.CollectionLikedAlbums : ApiBase.DataObject {

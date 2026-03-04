@@ -67,6 +67,13 @@ public sealed class Cassette.Window : Adw.ApplicationWindow {
         Cassette.Application.app_settings.bind ("window-height", this, "default-height", SettingsBindFlags.DEFAULT);
         Cassette.Application.app_settings.bind ("window-maximized", this, "maximized", SettingsBindFlags.DEFAULT);
 
+        if ((application as Cassette.Application).application_state == ApplicationState.BEGIN) {
+            Idle.add_once (() => {
+                var dialog = new BeginDialog ();
+                dialog.present (this);
+            });
+        }
+
         if (Config.IS_DEVEL) {
             add_css_class ("devel");
         }

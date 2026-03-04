@@ -34,9 +34,10 @@ namespace Cassette {
         }
 
         construct {
-            // Set nav_view property from template child
+            // Set nav_view from template; base class set child to default nav_view, so update child
             nav_view = navigation_view;
-            
+            child = nav_view;
+
             // Create main_box with usage mode UI
             main_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 12) {
                 margin_top = 8,
