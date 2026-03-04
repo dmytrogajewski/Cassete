@@ -380,7 +380,7 @@ namespace Cassette {
 
         public async override void first_show () {
             if (initial_playlist != null) {
-                // Already populated during construct
+                check_cache ();
                 return;
             }
 

@@ -54,7 +54,7 @@ public sealed class Cassette.WebkitAuthDialog : Adw.Dialog {
         webview.load_changed.connect ((event) => {
             if (("https://music.yandex." in webview.uri) && event != LoadEvent.STARTED) {
                 try {
-                    tmp_cookies_file.move (cookies_file, FileCopyFlags.ALL_METADATA);
+                    tmp_cookies_file.move (cookies_file, FileCopyFlags.ALL_METADATA | FileCopyFlags.OVERWRITE);
                 } catch (Error e) {
                     error (e.message);
                 }

@@ -19,6 +19,13 @@ add_project_arguments(
   language: ['c'],
 )
 
+if get_option('b_coverage')
+  add_project_arguments(
+    '-fprofile-abs-path',
+    language: ['c'],
+  )
+endif
+
 add_project_arguments(
   '--target-glib', glib_min_version,
   '--vapidir', meson.current_source_dir(),

@@ -23,6 +23,8 @@ tape_sources = files(
   'lib/cachier/controller.vala',
   'lib/cachier/humanity-size.vala',
   'lib/cachier/info-db.vala',
+  'lib/cachier/job.vala',
+  'lib/cachier/jober.vala',
   'lib/cachier/location.vala',
   'lib/cachier/storager.vala',
   'lib/player/mods/abstract-mode.vala',

@@ -37,6 +37,7 @@ vala_sources = files(
   'widgets/buttons/menu/volume-button.vala',
   'widgets/buttons/menu/track-options-button.vala',
   'widgets/buttons/menu/primary-menu-button.vala',
+  'widgets/cache-indicator/job-info-badge.vala',
   'widgets/cache-indicator/cache-indicator.vala',
   'widgets/player-bar.vala',
   'widgets/sidebar/sidebar-child-bin.vala',

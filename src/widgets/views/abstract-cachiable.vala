@@ -23,6 +23,8 @@ namespace Cassette {
         Gtk.Overlay overlay { get; default = new Gtk.Overlay (); }
         public Gtk.ProgressBar saving_progress_bar { get; default = new Gtk.ProgressBar (); }
 
+        protected Job? job = null;
+
         public new Gtk.Widget child {
             get {
                 return overlay.child;
@@ -97,68 +99,103 @@ namespace Cassette {
         }
 
         protected void start_saving (bool yell_status) {
-            //
-            // download_stack.visible_child_name = "abort";
-            // this.yell_status = yell_status;
+            download_stack.visible_child_name = "abort";
+            this.yell_status = yell_status;
 
-            // var cachier = Application.tape_client.cachier;
-            // job = cachier.start_cache (object_info);
+            var cachier = Application.tape_client.cachier;
+            job = cachier.jober.start_cache_obj (object_info);
 
-            // if (yell_status) {
-            //     var content_info = get_content_info (object_info);
-            //     var app = (Application?) GLib.Application.get_default ();
-            //     var window = app?.active_window as Window;
-            //     window?.show_message (_("%s saving has started").printf (
-            //         content_info.content_name
-            //     ));
-            // }
+            if (job != null) {
+                job.job_done.connect ((status) => {
+                    if (status == JobDoneStatus.SUCCESS) {
+                        download_stack.visible_child_name = "delete";
+                    } else {
+                        download_stack.visible_child_name = "save";
+                    }
+                    job = null;
+                });
+            } else {
+                // Job might be running already or failed to start
+                // Check if it's running
+                job = cachier.jober.find_job (object_info);
+                if (job != null) {
+                     // Attach to existing job?
+                     // Ideally we should attach if not already attached, but for now assume UI syncs on check_cache
+                } else {
+                    // Failed to start? Revert to save
+                    download_stack.visible_child_name = "save";
+                }
+            }
+
+            if (yell_status && job != null) {
+                var content_info = get_content_info (object_info);
+                var app = (Application?) GLib.Application.get_default ();
+                var window = app?.active_window as Window;
+                window?.show_message (_("%s saving has started").printf (
+                    content_info.content_name
+                ));
+            }
         }
 
         protected virtual void check_cache () {
-            //
-            // download_stack.sensitive = true;
+            download_stack.sensitive = true;
 
-            // var cachier = Application.tape_client.cachier;
-            // if (job == null) {
-            //     job = cachier.find_job (object_info.oid);
+            var cachier = Application.tape_client.cachier;
+            if (job == null) {
+                job = cachier.jober.find_job (object_info);
 
-            //     if (job == null) {
-            //         var storager = Application.tape_client.cachier.storager;
-            //         var location = storager.object_cache_location (object_info.get_type (), object_info.oid);
-            //         if (!location.is_tmp) {
-            //             start_saving (false);
-            //         }
-            //     }
-            // }
+                if (job != null) {
+                    download_stack.visible_child_name = "abort";
+                    job.job_done.connect ((status) => {
+                        if (status == JobDoneStatus.SUCCESS) {
+                            download_stack.visible_child_name = "delete";
+                        } else {
+                            download_stack.visible_child_name = "save";
+                        }
+                        job = null;
+                    });
+                } else {
+                    var storager = Application.tape_client.cachier.storager;
+                    var location = storager.object_cache_location (object_info.get_type (), object_info.oid);
+                    if (!location.is_tmp) {
+                        start_saving (false);
+                    }
+                }
+            }
         }
 
         public virtual void abort_saving () {
-            //
-            // if (job != null) {
-            //     job.abort ();
-            // }
+            if (job != null) {
+                job.abort ();
+            }
         }
 
         public virtual void uncache_playlist (bool yell_status) {
             download_stack.sensitive = false;
             this.yell_status = yell_status;
 
-            //
-            // var cachier = Application.tape_client.cachier;
-            // cachier.uncache.begin (object_info, () => {
-            //     download_stack.visible_child_name = "save";
-            //     download_stack.sensitive = true;
+            var cachier = Application.tape_client.cachier;
+            cachier.jober.uncache_obj_async.begin (object_info, (obj, res) => {
+                cachier.jober.uncache_obj_async.end (res);
+                
+                download_stack.visible_child_name = "save";
+                download_stack.sensitive = true;
 
-            //     if (yell_status) {
-            //         var content_info = get_content_info (object_info);
-            //         var app = (Application?) GLib.Application.get_default ();
-            //         var window = app?.active_window as Window;
-            //         window?.show_message (_("%s '%s' was moved from data to cache").printf (
-            //             content_info.content_name,
-            //             content_info.content_title
-            //         ));
-            //     }
-            // });
+                if (yell_status) {
+                    var content_info = get_content_info (object_info);
+                    var app = (Application?) GLib.Application.get_default ();
+                    var window = app?.active_window as Window;
+                    
+                    string title = "";
+                    if (object_info is YaMAPI.Playlist) title = ((YaMAPI.Playlist) object_info).title;
+                    else if (object_info is YaMAPI.Album) title = ((YaMAPI.Album) object_info).title;
+
+                    window?.show_message (_("%s '%s' was moved from data to cache").printf (
+                        content_info.content_name,
+                        title
+                    ));
+                }
+            });
 
             if (yell_status) {
                 var content_info = get_content_info (object_info);

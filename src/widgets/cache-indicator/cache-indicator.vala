@@ -33,21 +33,18 @@ public class Cassette.CacheIndicator : Adw.Bin {
 
             jobs_icon.set_draw_func (update_jobs_icon);
 
-            // Note: Cachier job system is not fully implemented in libtape yet
-            // The Jober class exists with job_created/job_removed signals, but it's commented out in Cachier
-            // When libtape's cachier.jober is uncommented and active, wire like this:
-            // var cachier = Application.tape_client.cachier;
-            // var jober = cachier.jober;
-            //
-            // jober.job_created.connect ((job) => {
-            //     job.track_saving_ended.connect (jobs_icon.queue_draw);
-            //     indicator_revealer.reveal_child = true;
-            // });
-            //
-            // jober.job_removed.connect ((job) => {
-            //     jobs_icon.queue_draw ();
-            //     update_indicator_visibility ();
-            // });
+            var cachier = Application.tape_client.cachier;
+            var jober = cachier.jober;
+
+            jober.job_created.connect ((job) => {
+                job.track_saving_ended.connect (jobs_icon.queue_draw);
+                indicator_revealer.reveal_child = true;
+            });
+
+            jober.job_removed.connect ((job) => {
+                jobs_icon.queue_draw ();
+                update_indicator_visibility ();
+            });
         }
 
         void on_jobs_popover_notify (ParamSpec pspec) {
@@ -74,22 +71,20 @@ public class Cassette.CacheIndicator : Adw.Bin {
             }
         }
 
-        //
-        // void update_indicator_visibility () {
-        //     // Note: Jober.job_list will be available when cachier.jober is uncommented
-        //     // When available, check like this:
-        //     // var cachier = Application.tape_client.cachier;
-        //     // var jober = cachier.jober;
-        //     // if (jober.job_list.size == 0) {
-        //     //     indicator_revealer.reveal_child = false;
-        //     // }
-        // }
+
+        void update_indicator_visibility () {
+            var cachier = Application.tape_client.cachier;
+            var jober = cachier.jober;
+            if (jober.job_list.size == 0) {
+                indicator_revealer.reveal_child = false;
+            }
+        }
 
         void fill_box () {
-            //
-            // foreach (var job in cachier.job_list) {
-            //     jobs_box.append (new JobInfoBadge (job));
-            // }
+            var cachier = Application.tape_client.cachier;
+            foreach (var job in cachier.jober.job_list) {
+                jobs_box.append (new JobInfoBadge (job));
+            }
         }
 
         // Took from https://gitlab.gnome.org/GNOME/nautilus/-/blob/main/src/nautilus-progress-indicator.c
@@ -103,11 +98,11 @@ public class Cassette.CacheIndicator : Adw.Bin {
             var background = foreground;
             background.alpha *= 0.3f;
 
-            //
-            // foreach (var job in cachier.job_list) {
-            //     elapsed_progress += job.saved_tracks_count;
-            //     total_progress += job.total_tracks_count;
-            // }
+            var cachier = Application.tape_client.cachier;
+            foreach (var job in cachier.jober.job_list) {
+                elapsed_progress += job.saved_tracks_count;
+                total_progress += job.total_tracks_count;
+            }
 
             if (total_progress > 0) {
                 ratio = double.max (0.01, (double) elapsed_progress / (double) total_progress);

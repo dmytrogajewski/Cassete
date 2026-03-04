@@ -60,7 +60,11 @@ public class Tape.InfoDB : Object {
                      + "CREATE TABLE IF NOT EXISTS content_refs ("
                      + "   what_id     TEXT    NOT NULL,"
                      + "   source_id   TEXT    NOT NULL,"
-                     + "   PRIMARY KEY (what_id, source_id));";
+                     + "   PRIMARY KEY (what_id, source_id));"
+                     + "CREATE TABLE IF NOT EXISTS filename_map ("
+                     + "   id          TEXT    PRIMARY KEY NOT NULL,"
+                     + "   filename    TEXT    NOT NULL"
+                     + ");";
 
         error_code = db.exec (query, null);
         if (error_code != Sqlite.OK) {
@@ -220,5 +224,76 @@ public class Tape.InfoDB : Object {
         }
 
         return statement.column_int (0);
+    }
+
+    /**
+     * Add or replace a filename map to db
+     *
+     * @param id        track id
+     * @param filename  filename to store
+     */
+    public void set_filename (string id, string filename) {
+        string query = "REPLACE INTO filename_map VALUES ($ID, $FILENAME)";
+
+        Sqlite.Statement statement;
+        db.prepare_v2 (query, query.length, out statement);
+
+        statement.bind_text (statement.bind_parameter_index ("$ID"), id);
+        statement.bind_text (statement.bind_parameter_index ("$FILENAME"), filename);
+
+        int error_code = statement.step ();
+        if (error_code != Sqlite.DONE) {
+            error ("Error while setting filename for %s in %s. Sqlite error code: %s, message: %s".printf (
+                id,
+                db_path,
+                db.errcode ().to_string (),
+                db.errmsg ()
+            ));
+        }
+    }
+
+    /**
+     * Get filename from db
+     *
+     * @param id    track id
+     */
+    public string? get_filename (string id) {
+        string query = "SELECT filename FROM filename_map WHERE id=$ID;";
+
+        Sqlite.Statement statement;
+        db.prepare_v2 (query, query.length, out statement);
+
+        statement.bind_text (statement.bind_parameter_index ("$ID"), id);
+
+        int error_code = statement.step ();
+        if (error_code != Sqlite.ROW) {
+            return null;
+        }
+
+        return statement.column_text (0);
+    }
+
+    /**
+     * Remove filename from db
+     *
+     * @param id    track id
+     */
+    public void remove_filename (string id) {
+        string query = "DELETE FROM filename_map WHERE id=$ID;";
+
+        Sqlite.Statement statement;
+        db.prepare_v2 (query, query.length, out statement);
+
+        statement.bind_text (statement.bind_parameter_index ("$ID"), id);
+
+        int error_code = statement.step ();
+        if (error_code != Sqlite.DONE) {
+             warning ("Error while removing filename for %s in %s. Sqlite error code: %s, message: %s".printf (
+                id,
+                db_path,
+                db.errcode ().to_string (),
+                db.errmsg ()
+            ));
+        }
     }
 }

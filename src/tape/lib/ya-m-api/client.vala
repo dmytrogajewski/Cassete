@@ -674,88 +674,8 @@ public sealed class Tape.YaMAPI.Client : Object {
         return yield jsoner.deserialize_object_async<Playlist> ();
     }
 
-    //  public async Playlist users_palylists_cover_upload (
-    //      string? uid,
-    //      string kind,
-    //      uint8[] new_cover,
-    //      string filename,
-    //      string content_type,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      var real_uid = fix_uid (uid);
 
-    //      var post_builder = new StringBuilder ();
 
-    //      post_builder.append (Uuid.string_random ());
-    //      post_builder.append_printf ("Content-Disposition: form-data; name=\"image\"; filename=\"%s\"\n", filename);
-    //      post_builder.append_printf ("Content-Type: %s\n", content_type);
-    //      post_builder.append_printf ("Content-Length: %d\n", new_cover.length);
-    //      post_builder.append ("\n");
-    //      post_builder.append ((string) new_cover);
-
-    //      PostContent post_content = { PostContentType.X_WWW_FORM_URLENCODED, post_builder.free_and_steal () };
-
-    //      Bytes bytes = yield session.post_async (
-    //          @"$(YAM_BASE_URL)/users/$uid/playlists/$kind/cover/upload",
-    //          { "default" },
-    //          post_content,
-    //          null,
-    //          null,
-    //          priority,
-    //          cancellable
-    //      );
-
-    //      var jsoner = new Jsoner.from_bytes (bytes, { "result" }, Case.CAMEL);
-
-    //      return (Playlist) yield jsoner.deserialize_object_async (typeof (Playlist));
-    //  }
-
-    //  public async Playlist users_palylists_cover_clear (
-    //      string? uid,
-    //      string kind,
-    //      uint8[] new_cover,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      var real_uid = fix_uid (uid);
-
-    //      Bytes bytes = yield session.post_async (
-    //          @"$(YAM_BASE_URL)/users/$uid/playlists/$kind/cover/clear",
-    //          { "default" },
-    //          null,
-    //          null,
-    //          null,
-    //          priority,
-    //          cancellable
-    //      );
-
-    //      var jsoner = new Jsoner.from_bytes (bytes, { "result" }, Case.CAMEL);
-
-    //      return (Playlist) yield jsoner.deserialize_object_async (typeof (Playlist));
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void users_likes_albums (
-    //      string? uid = null,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      var real_uid = fix_uid (uid);
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void users_likes_artists (
-    //      string? uid = null,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      var real_uid = fix_uid (uid);
-    //  }
 
     //  /**
     //   *
@@ -1217,49 +1137,6 @@ public sealed class Tape.YaMAPI.Client : Object {
         return false;
     }
 
-    //  /**
-    //   *
-    //   */
-    //  public async void users_presaves_add (
-    //      string? uid = null,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      var real_uid = fix_uid (uid);
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void users_presaves_remove (
-    //      string? uid = null,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      var real_uid = fix_uid (uid);
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void users_search_history (
-    //      string? uid = null,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      var real_uid = fix_uid (uid);
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void users_search_history_clear (
-    //      string? uid = null,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      var real_uid = fix_uid (uid);
-    //  }
 
     /**
      * Получение данных о библиотеке пользователя
@@ -1282,91 +1159,6 @@ public sealed class Tape.YaMAPI.Client : Object {
         return yield jsoner.deserialize_object_async<Library.AllIds> ();
     }
 
-    //  /**
-    //   *
-    //   */
-    //  public async void landing3_metatags (
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void metatags_metatag (
-    //      string metatag,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void metatags_albums (
-    //      string metatag,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void metatags_artists (
-    //      string metatag,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void metatags_playlists (
-    //      string metatag,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void top_category (
-    //      string category,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void rotor_station_info (
-    //      string station_id,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void rotor_station_stream (
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
 
     /**
      *
@@ -1573,25 +1365,6 @@ public sealed class Tape.YaMAPI.Client : Object {
         return yield jsoner.deserialize_array_async<Station> ();
     }
 
-    //  /**
-    //   *
-    //   */
-    //  public async void search_feedback (
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void search_instant_mixed (
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
 
     /**
      * Search for tracks by query
@@ -2201,102 +1974,6 @@ public sealed class Tape.YaMAPI.Client : Object {
         }
     }
 
-    //  /**
-    //   *
-    //   */
-    //  public async void rewind_slides_user (
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void rewind_slides_artist (
-    //      string artist_id,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void pins (
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void pins_albums (
-    //      bool pin,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void pins_playlist (
-    //      bool pin,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void pins_artist (
-    //      bool pin,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void pins_wave (
-    //      bool pin,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void tags_playlist_ids (
-    //      string tag_id,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
-
-    //  /**
-    //   *
-    //   */
-    //  public async void feed_promotions_promo (
-    //      string promo_id,
-    //      int priority = Priority.DEFAULT,
-    //      Cancellable? cancellable = null
-    //  ) throws SoupError, JsonError, BadStatusCodeError {
-    //      assert_not_reached ();
-    //  }
 
     public async Gee.ArrayList<Track> tracks (
         string[] id_list,

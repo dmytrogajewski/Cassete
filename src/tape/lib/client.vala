@@ -56,7 +56,7 @@ public class Tape.Client : Object {
     }
 
     public async bool init (string? yam_token = null)
-        throws CantUseError, ApiBase.BadStatusCodeError, ApiBase.SoupError {
+        throws CantUseError, ApiBase.BadStatusCodeError, ApiBase.SoupError, ApiBase.JsonError {
         string? token = yam_token;
         string? cookies_path = null;
 
@@ -82,7 +82,7 @@ public class Tape.Client : Object {
         try {
             yield yam_helper.init ();
         } catch (ApiBase.JsonError e) {
-            error (e.message);
+            throw e;
         } catch (ApiBase.BadStatusCodeError e) {
             if (e is ApiBase.BadStatusCodeError.UNAUTHORIZED) {
                 return false;

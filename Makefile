@@ -27,6 +27,8 @@ VALA_LINT_BUILD := $(VALA_LINT_DIR)/build
 VALA_LINT_LOCAL := $(TOOLS_DIR)/local_install/bin/vala-lint
 VALA_LINT_BINARY := $(VALA_LINT_BUILD)/src/io.elementary.vala-lint
 VALA_LINT_LIB_DIR := $(TOOLS_DIR)/local_install/lib64
+GCOVR_FILTER := (.*/tests/.*\.vala|.*/src/api/lib/(utils|data-object|enums)\.vala)
+GCOVR_EXCLUDE := (^|/)data-object\.c$|(^|/)enums\.c$|(^|/)utils\.c$
 
 # Default target
 .PHONY: all
@@ -106,8 +108,38 @@ check-todos:
 # Note: Only runs Cassette-specific tests to avoid dependency test failures
 .PHONY: test
 test: build check-todos
-	@echo "Running Cassette tests..."
-	@meson test -C $(BUILDDIR) --no-rebuild --suite cassette || (echo "Cassette tests failed!"; exit 1)
+	@set -e; \
+	echo "Running Cassette tests..."; \
+	meson test -C $(BUILDDIR) --no-rebuild --suite cassette; \
+	if ninja -C $(BUILDDIR) -t targets 2>/dev/null | grep -q '^coverage:'; then \
+		if command -v gcovr >/dev/null 2>&1; then \
+			echo "Generating coverage report..."; \
+			coverage_dir="$(BUILDDIR)/meson-logs/coverage"; \
+			rm -rf "$$coverage_dir"; \
+			mkdir -p "$$coverage_dir"; \
+			ln -sf "$(BUILDDIR)/src/api/libcassette-api-base.a.p/lib/data-object.c" "$(BUILDDIR)/data-object.c"; \
+			ln -sf "$(BUILDDIR)/src/api/libcassette-api-base.a.p/lib/enums.c" "$(BUILDDIR)/enums.c"; \
+			ln -sf "$(BUILDDIR)/src/api/libcassette-api-base.a.p/lib/utils.c" "$(BUILDDIR)/utils.c"; \
+			if gcovr --root "$(CURDIR)" --object-directory "$(BUILDDIR)" --exclude "$(CURDIR)/subprojects" --exclude '$(GCOVR_EXCLUDE)' --filter '$(GCOVR_FILTER)' --gcov-ignore-parse-errors --gcov-ignore-errors=source_not_found --xml -o "$$coverage_dir/coverage.xml"; then \
+				gcovr --root "$(CURDIR)" --object-directory "$(BUILDDIR)" --exclude "$(CURDIR)/subprojects" --exclude '$(GCOVR_EXCLUDE)' --filter '$(GCOVR_FILTER)' --gcov-ignore-parse-errors --gcov-ignore-errors=source_not_found --html-details -o "$$coverage_dir/index.html" || true; \
+				gcovr --root "$(CURDIR)" --object-directory "$(BUILDDIR)" --exclude "$(CURDIR)/subprojects" --exclude '$(GCOVR_EXCLUDE)' --filter '$(GCOVR_FILTER)' --gcov-ignore-parse-errors --gcov-ignore-errors=source_not_found > "$$coverage_dir/summary.txt" || true; \
+				if [ -f "$$coverage_dir/summary.txt" ]; then \
+					echo "Coverage report generated under $(BUILDDIR)/meson-logs/coverage"; \
+					echo "Coverage summary:"; \
+					cat "$$coverage_dir/summary.txt"; \
+				else \
+					echo "Coverage XML generated, but summary report failed. See gcovr output for details."; \
+				fi; \
+			else \
+				echo "gcovr failed to produce coverage artifacts. Tests passed, but coverage is unavailable (known issue with Vala-generated paths)."; \
+			fi; \
+		else \
+			echo "Coverage target present but gcovr not found. Install gcovr to generate reports."; \
+			exit 1; \
+		fi; \
+	else \
+		echo "Coverage target not configured. To enable, run 'meson setup $(BUILDDIR) -Db_coverage=true' (or 'meson configure $(BUILDDIR) -Db_coverage=true') and install gcovr or lcov. Skipping coverage generation."; \
+	fi
 
 # Lint/check code (vala-lint if available)
 .PHONY: check

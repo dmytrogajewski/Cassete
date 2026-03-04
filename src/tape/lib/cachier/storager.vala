@@ -63,7 +63,7 @@ public class Tape.Storager : Object {
     public File audios_datadir_file {
         get {
             if (_audios_datadir_file == null) {
-                _audios_datadir_file = File.new_build_filename (datadir_file.peek_path (), Filenames.AUDIOS);
+                _audios_datadir_file = File.new_build_filename (Environment.get_user_special_dir (UserDirectory.MUSIC), "Cassette");
             }
             create_dir_if_not_existing (_audios_datadir_file);
 
@@ -206,6 +206,15 @@ public class Tape.Storager : Object {
      */
     public async void move_loc_to_perm (Location loc) {
         yield move_file_to (loc.file, false);
+    }
+
+    public async void move_audio_to_perm (string track_id, string filename) {
+        db.set_filename (track_id, filename);
+
+        File src_file = get_audio_cache_file (track_id, true);
+        File dst_file = get_audio_cache_file (track_id, false);
+
+        yield move_file (src_file, dst_file);
     }
 
     static bool file_exists (File target_file) {
@@ -571,9 +580,21 @@ public class Tape.Storager : Object {
     ////////////
 
     File get_audio_cache_file (string track_id, bool is_tmp) {
+        string filename;
+        if (is_tmp) {
+             filename = encode_name (track_id);
+        } else {
+             string? db_filename = db.get_filename (track_id);
+             if (db_filename != null) {
+                 filename = db_filename;
+             } else {
+                 filename = encode_name (track_id);
+             }
+        }
+
         return File.new_build_filename (
             is_tmp ? audios_cachedir_file.peek_path () : audios_datadir_file.peek_path (),
-            encode_name (track_id)
+            filename
         );
     }
 

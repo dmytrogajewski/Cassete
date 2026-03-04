@@ -121,6 +121,10 @@ public sealed class Cassette.Auth : Loadable {
             activate_action_variant ("app.show-message", _("Bad status code: %i").printf (e.code));
             to_auth ();
             debug ("[TEST] Auth failed: bad status code %d", e.code);
+        } catch (ApiBase.JsonError e) {
+            activate_action_variant ("app.show-message", _("Invalid response from server: %s").printf (e.message));
+            to_auth ();
+            debug ("[TEST] Auth failed: JsonError %s", e.message);
         } catch (CantUseError e) {
             to_cant_use (e);
             debug ("[TEST] Auth failed: CantUseError code=%s", e.code.to_string ());

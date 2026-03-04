@@ -67,6 +67,7 @@ if get_option('tests')
 
   test('Playlist view guard test', playlist_view_test)
 
+
   audio_cache_test = executable(
     'audio-cache-test',
     sources: files(
